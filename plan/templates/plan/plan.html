@@ -1,0 +1,11 @@
+{% extends "plan/base.html" %}
+
+{% block content %}
+
+Annual hours: {{ plan.annualHours }}<br>
+Starts: {{ plan.planStart }}<br>
+Ends: {{ plan.planEnd }}<br>{% csrf_token %}
+Type of Plan: {{ plan.typeOfPlan}}<br>
+{% csrf_token %}
+
+{% endblock %}

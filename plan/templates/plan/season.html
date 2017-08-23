@@ -1,0 +1,20 @@
+{{ season.year }}
+	{% if races %}
+	    <ul>
+	    {% for race in races %}
+	        <li>{{ race.name }}</li>
+	    {% endfor %}
+	    </ul>
+	{% else %}
+	    <p>No users are available.</p>
+	{% endif %}
+	
+	{% if plans %}
+	    <ul>
+	    {% for plan in plans %}
+	        <li><a href="{% url 'plan:plan' user.id plan.id %}">{{ plan.annualHours }}, Start: {{ plan.planStart }}</a></li>
+	    {% endfor %}
+	    </ul>
+	{% else %}
+	    <p>No plans are available.</p>
+	{% endif %}

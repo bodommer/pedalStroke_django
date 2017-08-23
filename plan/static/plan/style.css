@@ -1,0 +1,54 @@
+body {
+	margin: 0px;
+}
+html {
+	margin: 0px;
+}
+
+section, nav, a, li, header, p, li, h1 {
+	border: solid 1px black;
+}
+
+
+section {
+	border: solid 1px black;
+}
+header {
+	height: 50px;
+	background-color: #AAAAAA;
+	padding: 0;
+}
+header img {
+	height: 50px;
+	display: inline;
+	float: left;
+}
+header h1 {
+	display: inline-block;
+  position: relative;
+	margin: 0;
+	margin-left: 2px;
+	padding: 7px;
+  width: 540px;
+  text-align: left;
+}
+
+li a {
+    color: blue;
+}
+
+nav {
+	height: 70px;
+
+}
+nav a, nav li {
+	display: inline-block;
+	text-decoration: none;
+	padding: .1rem;
+	margin: 5px;
+		border-radius: 20px;
+}
+nav li:hover {
+	background-color: #EEEEEE;
+
+}

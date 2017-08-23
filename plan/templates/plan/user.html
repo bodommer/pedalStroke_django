@@ -1,0 +1,10 @@
+<p> {{ user.name }} </p>
+	{% if seasons %}	
+	    <ul>
+	    {% for season in seasons %}
+	        <li><a href="{% url 'plan:season' user.id season.id %}">{{ season.year }}</a></li>
+	    {% endfor %}
+	    </ul>
+	{% else %}
+	    <p>No seasons are available.</p>
+	{% endif %}

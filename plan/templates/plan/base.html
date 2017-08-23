@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+	{% load static %}
+		<link rel="stylesheet" type="text/css" href="{% static 'plan/style.css' %}" />
+    <title>{% block title %}Django awesome app!{% endblock %}</title>
+</head>
+
+<body>
+	<header>
+{% load static %}
+	<img src="{% static "plan/images/icon-4.png" %}" alt="icon"/><h1>PedalStroke</h1>
+	</header>
+    <nav>
+        {% block sidebar %}
+        <ul>
+            <li><a href= {% url 'plan:index' %}>Home</a></li>
+			<li><a href= {% url 'plan:about' %}>About</a></li>
+            <li><a href= {% url 'plan:login' %}>Log in</a></li>
+            <li><a href= {% url 'plan:sign_up' %}>Sign up</a></li>
+        </ul>
+        {% endblock %}
+    </nav>
+
+    <section>
+        {% block content %}{% endblock %}
+    </section>
+    <footer>
+    	<p>Copyright Andrej Jurco</p>
+    </footer>
+</body>
+</html>
