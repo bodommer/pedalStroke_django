@@ -1,11 +1,14 @@
 from django.shortcuts import render, get_object_or_404, get_list_or_404
-from django.http import HttpResponse, Http404
+from django.http import HttpResponse, Http404, HttpResponseRedirect
 from django.template import loader
 from django.views import generic
 from plan.model.User import User
 from plan.model.Season import Season
 from plan.model.Race import Race
 from plan.model.Plan import Plan
+
+from .forms import LoginForm
+from django.views.decorators.csrf import csrf_protect
 
 class IndexView(generic.ListView):
     template_name = 'plan/index.html'
@@ -27,19 +30,21 @@ class IndexView(generic.ListView):
     #===================================================================
     # a django shortcut, args: request, template location, context data
 
-class UserView(generic.ListView):
-    template_name = 'plan/user.html'
-    context_object_name = 'user_list'
-    
-    def get_queryset(self):
-        return User.objects.order_by('-age')
-
-
-
-
-
+#===============================================================================
+# class UserView(generic.ListView):
+#     template_name = 'plan/user.html'
+#     context_object_name = 'season'
+#     season = get_list_or_404(fk=user_id)
+#     
+#     def get_queryset(self):
+#         return Season.get_all_objects_for_this_type()
+#===============================================================================
 
 def user(request, user_id):
+    seasons = get_list_or_404(Season, fk=user_id)
+    return render(request, 'plan/')
+
+def home(request, user_id):
     user = get_object_or_404(User, pk=user_id)
     seasons = get_list_or_404(Season, user_id=user_id)
     return render(request, 'plan/user.html', {'user': user, 'seasons': seasons})
@@ -64,7 +69,20 @@ def plan(request, user_id, plan_id):
     return render(request, 'plan/plan.html', {'plan': plan})
 
 def login(request):
-    return render(request, 'plan/login.html')
+    csrf_protect
+    if request.method == 'POST':
+        form = LoginForm(request.POST)
+        if form.is_valid():
+            data = form.cleaned_data
+            print(data)
+            user_list = User.objects.order_by('-age')
+            print(form.fields['username'])
+            user_id = get_object_or_404(User, name=data['username']).id
+            string = '/plan/' + str(user_id) + '/'
+            return HttpResponseRedirect(string)
+    else:
+        form = LoginForm()
+    return render(request, 'plan/login.html', {'form': form})
 
 def sign_up(request):
     return render(request, 'plan/sign_up.html')
