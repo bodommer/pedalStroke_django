@@ -21,3 +21,10 @@ class Plan(models.Model):
 
     def __str__(self):
         return "{}-hour plan for {}".format(self.annualHours, self.season_id)
+
+    def count_load(self, weekset):
+        load = 0
+        print(weekset)
+        for a in weekset: 
+            load += a
+        self.load = load

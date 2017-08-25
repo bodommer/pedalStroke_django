@@ -1,20 +1,32 @@
-{{ season.year }}
+{% extends "plan/base.html" %}
+
+{% block content %}
+
+<h3>Season {{ season.year }}</h3>
 	{% if races %}
-	    <ul>
-	    {% for race in races %}
-	        <li>{{ race.name }}</li>
+	    <table>
+	    	<th>Race name</th><th>Date</th><th>Priority</th><th>Estimated duration</th>
+		    {% for race in races %}
+		        <tr><td>{{ race.name }}</td><td>{{ race.date }}</td><td>{{ race.priority }}</td><td>{{ race.time }}</td></tr>
 	    {% endfor %}
+	    </table>
 	    </ul>
 	{% else %}
-	    <p>No users are available.</p>
+	    <p>No races created yet.</p>
 	{% endif %}
+	<a href={% url 'plan:new race' user_id season.id %}>Create a new race</a>
 	
 	{% if plans %}
-	    <ul>
-	    {% for plan in plans %}
-	        <li><a href="{% url 'plan:plan' user.id plan.id %}">{{ plan.annualHours }}, Start: {{ plan.planStart }}</a></li>
+		<table>
+	    	<th>#</th><th>Start date</th><th>End date</th><th>Duration(weeks)</th><th>Load</th>
+		    {% for plan in plans %}
+		        <tr><td><a href={% url 'plan:plan' user_id plan.id %}>{{ plan.id }}</a></td><td>{{ plan.planStart }}</td><td>{{ plan.planEnd }}</td><td>{{ plan.id }}</td><td>{{ plan.load }}</td></tr>
 	    {% endfor %}
+	    </table>
 	    </ul>
 	{% else %}
-	    <p>No plans are available.</p>
+	    <p>No races created yet.</p>
 	{% endif %}
+	<a href={% url 'plan:new plan' user_id season.id %}>Create a new plan</a>
+	
+{% endblock %}

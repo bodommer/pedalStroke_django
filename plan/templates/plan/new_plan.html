@@ -1,1 +1,12 @@
 {% extends "plan/base.html" %}
+
+{% block content %} 
+	<form action={% url 'plan:new plan' user_id season_id %} method="POST">
+	    {% csrf_token %}
+	    {% for field in form  %}
+	   		{{ field.errors }}
+	   		{{ field.label_tag }} {{ field }} <br> 
+	  {% endfor %}
+	    <input type="submit" value="Submit" />
+	</form>
+{% endblock %}

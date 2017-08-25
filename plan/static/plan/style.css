@@ -1,6 +1,9 @@
 body {
 	margin: 0px;
 }
+html {
+		font-family: "Lucida Sans Unicode", "Lucida Grande", sans-serif;
+}
 /*
 section, nav, a, li, header, p, li, h1, ul {
 	border: solid 1px black;

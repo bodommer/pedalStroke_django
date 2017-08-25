@@ -2,6 +2,7 @@ from django.db import models
 from django.utils import timezone
 from plan.model.Plan import Plan
 
+
 class PlanWeek(models.Model):
     aEndurance = models.PositiveSmallIntegerField(0)
     eForce = models.PositiveSmallIntegerField(0)
