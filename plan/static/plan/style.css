@@ -2,53 +2,86 @@ body {
 	margin: 0px;
 }
 html {
-	margin: 0px;
+		font-family: "Lucida Sans Unicode", "Lucida Grande", sans-serif;
 }
-
-section, nav, a, li, header, p, li, h1 {
+/*
+section, nav, a, li, header, p, li, h1, ul {
 	border: solid 1px black;
 }
-
-
-section {
-	border: solid 1px black;
+*/
+#topbar {
+	background-color: #BC1913;
+	height: 70px;
+	width: auto;
 }
 header {
-	height: 50px;
-	background-color: #AAAAAA;
-	padding: 0;
+	height: 70px;
+	width: 200px;
+	display: inline-block;
+	float: left;
+	background-image: url("images/pedalstroke_1.svg");
+	background-position: center;
+	background-repeat: no-repeat;
+	background-size: 304px 182px;
+	margin-top: -10px;
+	margin-left: 25%;
 }
 header img {
-	height: 50px;
-	display: inline;
-	float: left;
+	width: 300px;
+	height: 105px;
 }
-header h1 {
-	display: inline-block;
-  position: relative;
-	margin: 0;
-	margin-left: 2px;
-	padding: 7px;
-  width: 540px;
-  text-align: left;
-}
-
-li a {
-    color: blue;
-}
-
 nav {
 	height: 70px;
+	background-color: #BC1913;
+	float: right;
+	margin-right: 25%;
 
+	text-align: center;
 }
-nav a, nav li {
+nav ul {
 	display: inline-block;
-	text-decoration: none;
-	padding: .1rem;
-	margin: 5px;
-		border-radius: 20px;
+	list-style-type: none;
+	width: 500px;;
 }
-nav li:hover {
-	background-color: #EEEEEE;
+nav li {
+	display: inline-block;
+	margin: auto;
+	padding: .6rem;
+	margin-right: 3%;
+	float: right;
+	color: #FFFFFF;
+	background-color: #BC1913;
 
+}
+nav a {
+	border-radius: 7px;
+	color: #FFFFFF;
+	text-decoration: none;
+	padding: .6rem;
+	font-family: fantasy;
+	font-weight: 450;
+}
+#sign-up {
+	font-weight: 600;
+}
+nav a:hover{
+	background-color: #FFFFFF;
+	color: #BC1913;
+}
+section {
+	margin-left: 25%;
+	width: 50%;
+	min-height: 700px;
+}
+footer {
+	background-color: #BC1913;
+	text-align: center;
+	height: 45px;
+}
+footer p {
+	color: #FFFFFF;
+	width: 250px;
+	margin: auto;
+	padding-top: 12px;
+	font-size: 15px;
 }

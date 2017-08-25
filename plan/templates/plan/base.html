@@ -4,24 +4,28 @@
     <meta charset="utf-8">
 	{% load static %}
 		<link rel="stylesheet" type="text/css" href="{% static 'plan/style.css' %}" />
-    <title>{% block title %}Django awesome app!{% endblock %}</title>
+    <title>{% block title %}PedalStroke v2.0{% endblock %}</title>
 </head>
 
 <body>
-	<header>
-{% load static %}
-	<img src="{% static "plan/images/icon-4.png" %}" alt="icon"/><h1>PedalStroke</h1>
-	</header>
-    <nav>
-        {% block sidebar %}
-        <ul>
-            <li><a href= {% url 'plan:index' %}>Home</a></li>
-			<li><a href= {% url 'plan:about' %}>About</a></li>
-            <li><a href= {% url 'plan:login' %}>Log in</a></li>
-            <li><a href= {% url 'plan:sign_up' %}>Sign up</a></li>
-        </ul>
-        {% endblock %}
-    </nav>
+	<div id="topbar">
+    <!-- <header>
+      <img src="{% static 'plan/images/pedalstroke_1.svg' %}"> -->
+
+    <header style="background: url('{% static 'plan/images/pedalstroke_1.svg' %}') alt='icon')">
+  
+		</header>
+	    <nav>
+	        {% block sidebar %}
+          <ul>
+	            <li><a id="sign-up" href= {% url 'plan:sign_up' %}>Sign up</a></li>
+              <li><a href= {% url 'plan:login' %}>Log in</a></li>
+              <li><a href= {% url 'plan:about' %}>About</a></li>
+              <li><a href= {% url 'plan:index' %}>Home</a></li>
+          </ul>
+          {% endblock %}
+	    </nav>
+    </div>
 
     <section>
         {% block content %}{% endblock %}
