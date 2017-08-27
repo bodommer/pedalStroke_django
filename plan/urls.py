@@ -1,4 +1,4 @@
-from django.conf.urls import url
+from django.conf.urls import url, include
 
 from . import views
 
@@ -15,5 +15,4 @@ urlpatterns = [
     url(r'^(?P<user_id>[0-9]+)/season/(?P<season_id>[0-9]+)/new-plan/$', views.PlanView.new_plan, name='new plan'),
     url(r'^(?P<user_id>[0-9]+)/plan/(?P<plan_id>[0-9]+)/$', views.PlanView.plan, name='plan'),
     url(r'^about/$', views.IndexView.about, name='about'),
-                    
 ]
