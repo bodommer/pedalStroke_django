@@ -10,16 +10,16 @@
 <body>
 	<div id="topbar">
     <!-- <header>
-      <img src="{% static 'plan/images/pedalstroke_1.svg' %}"> -->
-
-    <header style="background: url('{% static 'plan/images/pedalstroke_1.svg' %}') alt='icon')">
-  
+      <img   src="{% static 'plan/images/pedalstroke_1.svg' %}"> -->
+	<a href= {% url 'plan:index' %}>
+    	<header style="background: url('{% static 'plan/images/pedalstroke_1.svg' %}') alt='icon')">
+  	</a>
 		</header>
 	    <nav>
 	        {% block sidebar %}
           <ul>
 	            <li><a id="sign-up" href= {% url 'plan:sign_up' %}>Sign up</a></li>
-              <li><a href= {% url 'plan:login' %}>Log in</a></li>
+              <li><a href= {% url 'login' %}>Log in</a></li>
               <li><a href= {% url 'plan:about' %}>About</a></li>
               <li><a href= {% url 'plan:index' %}>Home</a></li>
           </ul>

@@ -1,6 +1,9 @@
 from django.db import models
+from django.contrib.auth.models import User
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
-class User(models.Model):
+class Profile(models.Model):
     SKILL_CHOICES = (
         ('endurance', 'Endurance'),
         ('force', 'Force'),
@@ -10,6 +13,7 @@ class User(models.Model):
         ('maxPower', 'Maximum Power')
     )
 
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
     name = models.CharField(max_length=50, unique=True, default="")
     cp60 = models.PositiveIntegerField('CP60 (W)', default=100)
     maxHR = models.PositiveIntegerField('Maximum Heart Rate (bpm)', default=180)
@@ -26,3 +30,12 @@ class User(models.Model):
 
     def __str__(self):
         return "{} ({})".format(self.name, self.age)
+
+@receiver(post_save, sender=User)
+def create_user_profile(sender, instance, created, **kwargs):
+    if created:
+        Profile.objects.create(user=instance)
+
+@receiver(post_save, sender=User)
+def save_user_profile(sender, instance, **kwargs):
+    instance.profile.save()

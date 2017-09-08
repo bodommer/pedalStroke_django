@@ -2,7 +2,7 @@ from django.shortcuts import render, get_object_or_404, get_list_or_404
 from django.http import HttpResponse, Http404, HttpResponseRedirect
 from django.template import loader
 from django.views import generic
-from plan.model.User import User
+from plan.model.Profile import Profile
 from plan.model.Season import Season
 from plan.model.Race import Race
 from plan.model.Plan import Plan
@@ -69,6 +69,7 @@ class UserView(generic.View):
             if form.is_valid():
                 data = form.cleaned_data
                 string = '/plan/'
+                user = User
                 return HttpResponseRedirect(string)
         else:
             form = SignupForm()
