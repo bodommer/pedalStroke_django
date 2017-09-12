@@ -89,7 +89,11 @@ class UserView(generic.View):
 
     def profile(request, user_id):
         if request.user.is_authenticated:
-            return render(request, 'plan/profile.html', {'owner': True})
+            userProfile = User.objects.filter(id=user_id)[0]
+            owner = True
+            if user_id != request.user.id:
+                owner = False
+            return render(request, 'plan/profile.html', {'owner': owner, 'userProfile': userProfile})
         messages = ('To see the profile, please, log in.',)
         return render(request, 'default_sites/message_site.html', {'messages': messages})
     
