@@ -14,7 +14,7 @@ from django.shortcuts import render, redirect
 from django.utils.encoding import force_bytes, force_text
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.template.loader import render_to_string
-from plan.forms import SignupForm
+from plan.forms import SignupForm, EditProfileForm
 from plan.tokens import account_activation_token
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.views import logout_then_login
@@ -61,41 +61,55 @@ class UserView(generic.View):
         return render(request, 'plan/login.html', {'form': form})
     
     def sign_up(request):
-        if request.method == 'POST':
-            form = SignupForm(request.POST)
-            if form.is_valid():
-                user = form.save()
-                user.refresh_from_db()
-                user.save()
-                current_site = get_current_site(request)
-                subject = 'Activate Your MySite Account'
-                message = render_to_string('plan/acc_activate_email.html', {
-                    'user':user, 
-                    'domain':current_site.domain,
-                    'uid': urlsafe_base64_encode(force_bytes(user.pk)),
-                    'token': account_activation_token.make_token(user),
-                })
-                mail_subject = 'Activate your blog account.'
-                to_email = form.cleaned_data.get('email')
-                email = EmailMessage(mail_subject, message, to=[to_email])
-                email.send()
-                return render(request, 'registration/confirmation_email_sent.html')
-        else:
-            form = SignupForm()
-        return render(request, 'plan/sign_up.html', {'form': form})
+        if request.user.is_authenticated():
+            if request.method == 'POST':
+                form = SignupForm(request.POST)
+                if form.is_valid():
+                    user = form.save()
+                    user.refresh_from_db()
+                    user.save()
+                    current_site = get_current_site(request)
+                    subject = 'Activate Your MySite Account'
+                    message = render_to_string('plan/acc_activate_email.html', {
+                        'user':user, 
+                        'domain':current_site.domain,
+                        'uid': urlsafe_base64_encode(force_bytes(user.pk)),
+                        'token': account_activation_token.make_token(user),
+                    })
+                    mail_subject = 'Activate your blog account.'
+                    to_email = form.cleaned_data.get('email')
+                    email = EmailMessage(mail_subject, message, to=[to_email])
+                    email.send()
+                    return render(request, 'registration/confirmation_email_sent.html')
+            else:
+                form = SignupForm()
+            return render(request, 'plan/sign_up.html', {'form': form})
+        messages = ('You are already logged in!',)
+        return render(request, 'default_sites/message_site.html', {'messages': messages})
 
     def profile(request, user_id):
         if request.user.is_authenticated:
-            return render(request, 'plan/profile.html')
+            return render(request, 'plan/profile.html', {'owner': True})
         messages = ('To see the profile, please, log in.',)
         return render(request, 'default_sites/message_site.html', {'messages': messages})
     
     def profileEdit(request, user_id):
         if request.user.is_authenticated:
-            return render(request, 'plan/profile_edit.html')
+            csrf_protect
+            if request.method == 'POST':
+                form = EditProfileForm(request.POST)
+                if form.is_valid():
+                    data = form.cleaned_data
+                    user = User.objects.filter(id=user_id)[0]
+                    user.profile.updateData(data)
+                    user.save()
+                    string = '/plan/' + str(user_id) + '/profile/'
+                    return HttpResponseRedirect(string)
+            else:
+                form = EditProfileForm()
+            return render(request, 'plan/profile_edit.html', {'form': form})
         messages = ('To see the profile, please, log in.',)
         return render(request, 'default_sites/message_site.html', {'messages': messages})
-        
         
     def activate(request, uidb64, token):
         try:
@@ -127,7 +141,7 @@ class SeasonView(generic.View):
     
     def season(request, user_id, season_id):
         season = get_object_or_404(Season, pk=season_id)
-        races = Race.objects.filter(season_id = season_id)
+        races = Race.objects.filter(season_id=season_id)
         plans = Plan.objects.filter(season_id=season_id)
         for plan in plans:
             plan.count_load(PlanWeek.objects.filter(plan_id = plan.id).values_list('weeklyHours'))

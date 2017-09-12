@@ -5,12 +5,12 @@ from django.dispatch import receiver
 
 class Profile(models.Model):
     SKILL_CHOICES = (
-        ('endurance', 'Endurance'),
-        ('force', 'Force'),
-        ('speedSkills', 'Speed Skills'),
-        ('eForce', 'Endurance Force'),
-        ('aEndurance', 'Anaerobic Endurance'),
-        ('maxPower', 'Maximum Power')
+        ('Endurance', 'Endurance'),
+        ('Force', 'Force'),
+        ('Speed Skills', 'Speed Skills'),
+        ('Endurance Force', 'Endurance Force'),
+        ('Anaerobic Endurance', 'Anaerobic Endurance'),
+        ('Maximum Power', 'Maximum Power')
     )
 
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -31,6 +31,16 @@ class Profile(models.Model):
 
     def __str__(self):
         return "{} ({})".format(self.name, self.age)
+    
+    def updateData(self, field):
+        self.cp60 = field['cp60']
+        self.maxHR = field['maxHR']
+        self.age = field['age']
+        self.yearsOfExperience = field['yearsOfExperience']
+        self.strong1 = field['strong1']
+        self.strong2 = field['strong2']
+        self.weak1 = field['weak1']
+        self.weak2 = field['weak2']
     
 @receiver(post_save, sender=User)
 def update_user_profile(sender, instance, created, **kwargs):
