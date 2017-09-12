@@ -1,0 +1,18 @@
+{% extends "plan/base_logged.html" %}
+
+{% block content %} 
+	<p>
+	{% if user %}
+		{{ user.profile.cp60 }}
+		{{ user.profile.maxHR }}
+		{{ user.profile.age }}
+		{{ user.profile.yearsOfExperience }}
+		{{ user.profile.Strong1 }}
+		{{ user.profile.Strong2 }}
+		{{ user.profile.Weak1 }}
+		{{ user.profile.Weak2 }}
+	{% else %}
+		Invalid data!
+	{% endif %}
+	</p>
+{% endblock %}
