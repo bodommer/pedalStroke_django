@@ -14,7 +14,8 @@ class Profile(models.Model):
     )
 
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    name = models.CharField(max_length=50, unique=True, default="")
+    email_confirmed = models.BooleanField(default=False)
+    profile_filled = models.BooleanField(default=False)
     cp60 = models.PositiveIntegerField('CP60 (W)', default=100)
     maxHR = models.PositiveIntegerField('Maximum Heart Rate (bpm)', default=180)
     age = models.PositiveIntegerField('Age', default=18)
@@ -30,12 +31,9 @@ class Profile(models.Model):
 
     def __str__(self):
         return "{} ({})".format(self.name, self.age)
-
+    
 @receiver(post_save, sender=User)
-def create_user_profile(sender, instance, created, **kwargs):
+def update_user_profile(sender, instance, created, **kwargs):
     if created:
         Profile.objects.create(user=instance)
-
-@receiver(post_save, sender=User)
-def save_user_profile(sender, instance, **kwargs):
     instance.profile.save()

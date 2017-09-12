@@ -123,3 +123,9 @@ STATIC_URL = '/static/'
 LOGIN_REDIRECT_URL = '/plan/'
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+EMAIL_USE_TLS = True
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST_USER = 'hqprdc123@gmail.com'
+EMAIL_HOST_PASSWORD = 'm281995j'
+EMAIL_PORT = 587

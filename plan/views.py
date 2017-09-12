@@ -1,42 +1,38 @@
 from django.shortcuts import render, get_object_or_404, get_list_or_404
 from django.http import HttpResponse, Http404, HttpResponseRedirect
-from django.template import loader
+from django.template.loader import *
 from django.views import generic
+import base64
 from plan.model.Profile import Profile
 from plan.model.Season import Season
 from plan.model.Race import Race
 from plan.model.Plan import Plan
 from plan.model.PlanWeek import PlanWeek
 
-from .forms import *
+from django.contrib.sites.shortcuts import get_current_site
+from django.shortcuts import render, redirect
+from django.utils.encoding import force_bytes, force_text
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.template.loader import render_to_string
+from plan.forms import SignupForm
+from plan.tokens import account_activation_token
+from django.contrib.auth import login, authenticate
+from django.contrib.auth.views import logout_then_login
+from django.core.mail import EmailMessage
+from django.contrib.auth.models import User
 from django.views.decorators.csrf import csrf_protect
 
 class IndexView(generic.View):
 
     def index(request):
+        if request.user.is_authenticated:
+            return HttpResponseRedirect('/plan/' + str(request.user.id) + '/')
         return render(request, 'plan/index.html')
     
     def about(request):
+        if request.user.is_authenticated:
+            return render(request, 'plan/about_logged.html')
         return render(request, 'plan/about.html')
-    #===================================================================
-    # try:
-    #     user_list = User.objects.order_by('-age')
-    # except:
-    #     raise Http404("No users found")
-    # context = {'user_list': user_list}
-    # return render(request, 'plan/index.html', context)
-    #===================================================================
-    # a django shortcut, args: request, template location, context data
-
-#===============================================================================
-# class UserView(generic.ListView):
-#     template_name = 'plan/user.html'
-#     context_object_name = 'season'
-#     season = get_list_or_404(fk=user_id)
-#     
-#     def get_queryset(self):
-#         return Season.get_all_objects_for_this_type()
-#===============================================================================
 
 class UserView(generic.View):
     def user(request, user_id):
@@ -44,9 +40,11 @@ class UserView(generic.View):
         return render(request, 'plan/')
 
     def home(request, user_id):
-        user = get_object_or_404(User, pk=user_id)
-        seasons = get_list_or_404(Season, user_id=user_id)
-        return render(request, 'plan/home.html', {'user': user, 'seasons': seasons})
+        if request.user.is_authenticated:
+            if str(request.user.id) == user_id:
+                seasons = Season.objects.filter(user_id = request.user.id)
+                return render(request, 'plan/home.html', {'user': request.user, 'seasons': seasons})
+        return render(request, 'default_sites/unauthorised_access.html')
     
     def login(request):
         csrf_protect
@@ -63,18 +61,56 @@ class UserView(generic.View):
         return render(request, 'plan/login.html', {'form': form})
     
     def sign_up(request):
-        csrf_protect
         if request.method == 'POST':
             form = SignupForm(request.POST)
             if form.is_valid():
-                data = form.cleaned_data
-                string = '/plan/'
-                user = User
-                return HttpResponseRedirect(string)
+                user = form.save()
+                user.refresh_from_db()
+                user.save()
+                current_site = get_current_site(request)
+                subject = 'Activate Your MySite Account'
+                message = render_to_string('plan/acc_activate_email.html', {
+                    'user':user, 
+                    'domain':current_site.domain,
+                    'uid': urlsafe_base64_encode(force_bytes(user.pk)),
+                    'token': account_activation_token.make_token(user),
+                })
+                mail_subject = 'Activate your blog account.'
+                to_email = form.cleaned_data.get('email')
+                email = EmailMessage(mail_subject, message, to=[to_email])
+                email.send()
+                return render(request, 'registration/confirmation_email_sent.html')
         else:
             form = SignupForm()
         return render(request, 'plan/sign_up.html', {'form': form})
-        #return render(request, 'plan/sign_up.html')
+
+    def profile(request, user_id):
+        if request.user.is_authenticated:
+            return render(request, 'plan/profile.html')
+        messages = ('To see the profile, please, log in.',)
+        return render(request, 'default_sites/message_site.html', {'messages': messages})
+    
+    def profileEdit(request, user_id):
+        if request.user.is_authenticated:
+            return render(request, 'plan/profile_edit.html')
+        messages = ('To see the profile, please, log in.',)
+        return render(request, 'default_sites/message_site.html', {'messages': messages})
+        
+        
+    def activate(request, uidb64, token):
+        try:
+            uid = force_text(urlsafe_base64_decode(uidb64))
+            user = User.objects.get(pk=uid)
+        except(TypeError, ValueError, OverflowError, User.DoesNotExist):
+            user = None
+        if user is not None and account_activation_token.check_token(user, token):
+            user.is_active = True
+            user.save()
+            login(request, user)
+            # return redirect('home')
+            return render(request, 'plan/email_confirmation.html')
+        else:
+            return HttpResponse('Activation link is invalid!')
 
 class SeasonView(generic.View):
 
@@ -126,6 +162,11 @@ class PlanView(generic.View):
     def plan(request, user_id, plan_id):
         plan = get_object_or_404(Plan, pk=plan_id)
         return render(request, 'plan/plan.html', {'plan': plan})
+
+def logout(request):
+    csrf_protect
+    return logout_then_login(request, login_url='/login/')
+    
 
 
 
