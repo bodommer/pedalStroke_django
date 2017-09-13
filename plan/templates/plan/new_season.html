@@ -1,7 +1,12 @@
-{% extends "plan/base.html" %}
+{% extends "plan/base_logged.html" %}
 
 {% block content %} 
-		<form action={% url 'plan:new season' user_id %} method="POST">
+	{% if messages %}	
+		    {% for message in messages %}
+		        <p style="color: red">{{ message }} </p>
+		    {% endfor %}
+			{% endif %}
+	<form action={% url 'plan:new season' user_id %} method="POST">
 	    {% csrf_token %}
 	    {% for field in form  %}
 	   		{{ field.errors }}

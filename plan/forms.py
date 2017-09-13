@@ -2,7 +2,8 @@ from django import forms
 from django.utils import timezone
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
-from .model import Profile
+from .model import Profile, Season
+from datetime import date
 
 class LoginForm(forms.Form):
     username = forms.CharField(label='Username', max_length=32)
@@ -15,8 +16,12 @@ class SignupForm(UserCreationForm):
         model = User
         fields = ('username', 'email', 'password1', 'password2')
 
-class NewSeason(forms.Form):
-    year = forms.IntegerField(label='Year', min_value=2017, max_value=2057)
+class NewSeasonForm(forms.Form):
+    year = forms.IntegerField(label='Year', min_value=date.today().year, max_value=date.today().year+40)
+    
+    class Meta:
+        model = Season
+        field = ('year')
 
 class NewRace(forms.Form):
     DATE_INPUT_FORMATS = ('%d-%m-%Y','%Y-%m-%d')
