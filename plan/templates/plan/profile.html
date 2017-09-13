@@ -1,18 +1,23 @@
 {% extends "plan/base_logged.html" %}
 
 {% block content %} 
-	<p>
-	{% if user %}
-		{{ user.profile.cp60 }}
-		{{ user.profile.maxHR }}
-		{{ user.profile.age }}
-		{{ user.profile.yearsOfExperience }}
-		{{ user.profile.Strong1 }}
-		{{ user.profile.Strong2 }}
-		{{ user.profile.Weak1 }}
-		{{ user.profile.Weak2 }}
+	{% if userProfile %}
+		<h3>Profile information</h3>
+		<p>
+		CP60: {{ userProfile.profile.cp60 }}W<br>
+		Maximum heart rate: {{ userProfile.profile.maxHR }}bpm<br>
+		Age: {{ userProfile.profile.age }} years<br>
+		Years of Experience: {{ userProfile.profile.yearsOfExperience }}<br>
+		Strongest Skill: {{ userProfile.profile.strong1 }}<br>
+		2nd Strongest Skill: {{ userProfile.profile.strong2 }}<br>
+		Weakest Skill: {{ userProfile.profile.weak1 }}<br>
+		2nd Weakest Skill: {{ userProfile.profile.weak2 }}<br>
+		
+		{% if owner %}
+			<a href="{% url 'plan:profile edit' user.id %}">Edit profile</a>
+		{% endif %}
 	{% else %}
-		Invalid data!
+		<p>Invalid data!
 	{% endif %}
 	</p>
 {% endblock %}

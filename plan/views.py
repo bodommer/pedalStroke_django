@@ -14,13 +14,15 @@ from django.shortcuts import render, redirect
 from django.utils.encoding import force_bytes, force_text
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.template.loader import render_to_string
-from plan.forms import SignupForm
+from plan.forms import SignupForm, EditProfileForm, NewSeasonForm
 from plan.tokens import account_activation_token
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.views import logout_then_login
 from django.core.mail import EmailMessage
 from django.contrib.auth.models import User
 from django.views.decorators.csrf import csrf_protect
+from django.forms.models import model_to_dict
+from datetime import date
 
 class IndexView(generic.View):
 
@@ -61,41 +63,64 @@ class UserView(generic.View):
         return render(request, 'plan/login.html', {'form': form})
     
     def sign_up(request):
-        if request.method == 'POST':
-            form = SignupForm(request.POST)
-            if form.is_valid():
-                user = form.save()
-                user.refresh_from_db()
-                user.save()
-                current_site = get_current_site(request)
-                subject = 'Activate Your MySite Account'
-                message = render_to_string('plan/acc_activate_email.html', {
-                    'user':user, 
-                    'domain':current_site.domain,
-                    'uid': urlsafe_base64_encode(force_bytes(user.pk)),
-                    'token': account_activation_token.make_token(user),
-                })
-                mail_subject = 'Activate your blog account.'
-                to_email = form.cleaned_data.get('email')
-                email = EmailMessage(mail_subject, message, to=[to_email])
-                email.send()
-                return render(request, 'registration/confirmation_email_sent.html')
-        else:
-            form = SignupForm()
-        return render(request, 'plan/sign_up.html', {'form': form})
+        if request.user.is_authenticated():
+            if request.method == 'POST':
+                form = SignupForm(request.POST)
+                if form.is_valid():
+                    user = form.save()
+                    user.refresh_from_db()
+                    user.save()
+                    current_site = get_current_site(request)
+                    subject = 'Activate Your MySite Account'
+                    message = render_to_string('plan/acc_activate_email.html', {
+                        'user':user, 
+                        'domain':current_site.domain,
+                        'uid': urlsafe_base64_encode(force_bytes(user.pk)),
+                        'token': account_activation_token.make_token(user),
+                    })
+                    mail_subject = 'Activate your blog account.'
+                    to_email = form.cleaned_data.get('email')
+                    email = EmailMessage(mail_subject, message, to=[to_email])
+                    email.send()
+                    return render(request, 'registration/confirmation_email_sent.html')
+            else:
+                form = SignupForm()
+            return render(request, 'plan/sign_up.html', {'form': form})
+        messages = ('You are already logged in!',)
+        return render(request, 'default_sites/message_site.html', {'messages': messages})
 
     def profile(request, user_id):
         if request.user.is_authenticated:
-            return render(request, 'plan/profile.html')
+            userProfile = User.objects.filter(id=user_id)[0]
+            owner = True
+            if str(user_id) != str(request.user.id):
+                owner = False
+            return render(request, 'plan/profile.html', {'owner': owner, 'userProfile': userProfile})
         messages = ('To see the profile, please, log in.',)
         return render(request, 'default_sites/message_site.html', {'messages': messages})
     
     def profileEdit(request, user_id):
         if request.user.is_authenticated:
-            return render(request, 'plan/profile_edit.html')
+            if str(request.user.id) == str(user_id):
+                csrf_protect
+                if request.method == 'POST':
+                    form = EditProfileForm(request.POST)
+                    if form.is_valid():
+                        data = form.cleaned_data
+                        user = User.objects.filter(id=user_id)[0]
+                        user.profile.updateData(data)
+                        user.save()
+                        string = '/plan/' + str(user_id) + '/profile/'
+                        return HttpResponseRedirect(string)
+                else:
+                    mod = Profile.objects.get(user_id=user_id)
+                    form = EditProfileForm(initial=model_to_dict(mod))
+                return render(request, 'plan/profile_edit.html', {'form': form})
+            else:
+                messages = ('You do not have the permission to edit this profile!',)
+                return render(request, 'default_sites/message_site_logged.html', {'messages': messages})
         messages = ('To see the profile, please, log in.',)
         return render(request, 'default_sites/message_site.html', {'messages': messages})
-        
         
     def activate(request, uidb64, token):
         try:
@@ -107,7 +132,6 @@ class UserView(generic.View):
             user.is_active = True
             user.save()
             login(request, user)
-            # return redirect('home')
             return render(request, 'plan/email_confirmation.html')
         else:
             return HttpResponse('Activation link is invalid!')
@@ -115,19 +139,34 @@ class UserView(generic.View):
 class SeasonView(generic.View):
 
     def new_season(request, user_id):
-        csrf_protect
-        if request.method == 'POST':
-            form = NewSeason(request.POST)
-            if form.is_valid():
-                string = '/plan/' + user_id + '/'
-                return HttpResponseRedirect(string)
-        else:
-            form = NewSeason()
-        return render(request, 'plan/new_season.html', {'form': form, 'user_id':user_id})
+        if request.user.is_authenticated():
+            if str(request.user.id) == user_id:
+                csrf_protect
+                if request.method == 'POST':
+                    form = NewSeasonForm(request.POST)
+                    if form.is_valid():
+                        data = form.cleaned_data
+                        if len(Season.objects.filter(user_id_id=user_id, year=data['year'])) == 0:
+                            season = Season(year=data['year'], user_id_id=user_id)
+                            season.save()
+                            string = '/plan/' + user_id + '/'
+                            return HttpResponseRedirect(string)
+                        else:
+                            messages = ('You have already created the ' + str(data['year']) + ' season',)
+                            form = NewSeasonForm(initial={'year': data['year']})
+                            return render(request, 'plan/new_season.html', {'form': form, 'messages': messages, 'user_id':user_id})
+                else:
+                    form = NewSeasonForm(initial={'year': date.today().year})
+                return render(request, 'plan/new_season.html', {'form': form, 'user_id':user_id})
+            messages = ('You do not have access to this site!',)
+            return render(request, 'default_sites/message_site_logged.html', {'messages': messages})
+        messages = ('You are not authorised t access this site!',)
+        return render(request, 'default_sites/message_site.html', {'messages': messages})
+        
     
     def season(request, user_id, season_id):
         season = get_object_or_404(Season, pk=season_id)
-        races = Race.objects.filter(season_id = season_id)
+        races = Race.objects.filter(season_id=season_id)
         plans = Plan.objects.filter(season_id=season_id)
         for plan in plans:
             plan.count_load(PlanWeek.objects.filter(plan_id = plan.id).values_list('weeklyHours'))

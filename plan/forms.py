@@ -2,6 +2,8 @@ from django import forms
 from django.utils import timezone
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
+from .model import Profile, Season
+from datetime import date
 
 class LoginForm(forms.Form):
     username = forms.CharField(label='Username', max_length=32)
@@ -14,8 +16,12 @@ class SignupForm(UserCreationForm):
         model = User
         fields = ('username', 'email', 'password1', 'password2')
 
-class NewSeason(forms.Form):
-    year = forms.IntegerField(label='Year', min_value=2017, max_value=2057)
+class NewSeasonForm(forms.Form):
+    year = forms.IntegerField(label='Year', min_value=date.today().year, max_value=date.today().year+40)
+    
+    class Meta:
+        model = Season
+        field = ('year')
 
 class NewRace(forms.Form):
     DATE_INPUT_FORMATS = ('%d-%m-%Y','%Y-%m-%d')
@@ -38,3 +44,26 @@ class NewPlan(forms.Form):
     planEnd = forms.DateField(label='Plan End', input_formats=DATE_INPUT_FORMATS)
     annualHours = forms.ChoiceField(HOURS_CHOICES)
     typeOfPlan = forms.ChoiceField(PLAN_CHOICES)
+    
+class EditProfileForm(forms.Form):
+    SKILL_CHOICES = (
+        ('Endurance', 'Endurance'),
+        ('Force', 'Force'),
+        ('Speed Skills', 'Speed Skills'),
+        ('Endurance Force', 'Endurance Force'),
+        ('Anaerobic Endurance', 'Anaerobic Endurance'),
+        ('Maximum Power', 'Maximum Power')
+    )
+
+    cp60 = forms.IntegerField(label='CP60 (W)')
+    maxHR = forms.IntegerField(label='Maximum Heart Rate (bpm)')
+    age = forms.IntegerField(label='Age')
+    yearsOfExperience = forms.IntegerField(label='Years of Experience')
+    strong1 = forms.ChoiceField(label='Strongest skill',
+                                choices=SKILL_CHOICES)
+    strong2 = forms.ChoiceField(label='Second strongest skill', 
+                                choices=SKILL_CHOICES)
+    weak1 = forms.ChoiceField(label='Weakest skills', 
+                                choices=SKILL_CHOICES)
+    weak2 = forms.ChoiceField(label='Second weakest skill',
+                               choices=SKILL_CHOICES)
