@@ -85,3 +85,15 @@ footer p {
 	padding-top: 12px;
 	font-size: 15px;
 }
+
+td, tr, th {
+padding-right: 5%;
+width: 30%;
+text-align: left;
+}
+.id, .priority, .duration, .load {
+width: 5%;
+}
+.est-duration {
+text-align: center;
+}

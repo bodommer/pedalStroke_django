@@ -2,7 +2,7 @@ from django import forms
 from django.utils import timezone 
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
-from .model import Profile, Season, Race
+from .model import Profile, Season, Race, Plan
 from datetime import date, time
 
 class LoginForm(forms.Form):
@@ -35,7 +35,7 @@ class NewRaceForm(forms.Form):
         fields = ('name', 'date', 'priority', 'time')
 
     
-class NewPlan(forms.Form):
+class NewPlanForm(forms.Form):
     PLAN_CHOICES = (
         ('normal', 'Normal'),
         ('reversed', 'Reversed')
@@ -48,6 +48,10 @@ class NewPlan(forms.Form):
     planEnd = forms.DateField(label='Plan End', input_formats=DATE_INPUT_FORMATS)
     annualHours = forms.ChoiceField(HOURS_CHOICES)
     typeOfPlan = forms.ChoiceField(PLAN_CHOICES)
+    
+    class Meta:
+        model = Plan
+        fields = ('name', 'planStart', 'planEnd', 'annualHours', 'typeOfPlan')
     
 class EditProfileForm(forms.Form):
     SKILL_CHOICES = (

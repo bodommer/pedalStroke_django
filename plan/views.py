@@ -8,15 +8,14 @@ from django.utils import timezone
 from plan.model.Profile import Profile
 from plan.model.Season import Season
 from plan.model.Race import Race
-from plan.model.Plan import Plan
-from plan.model.PlanWeek import PlanWeek
+from plan.model.Plan import Plan, PlanWeek
 
 from django.contrib.sites.shortcuts import get_current_site
 from django.shortcuts import render, redirect
 from django.utils.encoding import force_bytes, force_text
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.template.loader import render_to_string
-from plan.forms import SignupForm, EditProfileForm, NewSeasonForm, NewRaceForm
+from plan.forms import SignupForm, EditProfileForm, NewSeasonForm, NewRaceForm, NewPlanForm
 from plan.tokens import account_activation_token
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.views import logout_then_login
@@ -46,7 +45,7 @@ class UserView(generic.View):
     def home(request, user_id):
         if request.user.is_authenticated:
             if str(request.user.id) == user_id:
-                seasons = Season.objects.filter(user_id = request.user.id)
+                seasons = Season.objects.filter(parent_user = request.user.id)
                 return render(request, 'plan/home.html', {'user': request.user, 'seasons': seasons})
         return render(request, 'default_sites/unauthorised_access.html')
     
@@ -167,10 +166,12 @@ class SeasonView(generic.View):
     
     def season(request, user_id, season_id):
         season = get_object_or_404(Season, pk=season_id)
-        races = Race.objects.filter(season_id=season_id)
-        plans = Plan.objects.filter(season_id=season_id)
-        for plan in plans:
-            plan.count_load(PlanWeek.objects.filter(plan_id = plan.id).values_list('weeklyHours'))
+        races = Race.objects.filter(parent_season=season_id)
+        for race in races:
+            race.time = '{:d}:{:02d}:{:02d}'.format(race.time.hour, race.time.minute, race.time.second)
+        plans = Plan.objects.filter(parent_season=season_id)
+        #for plan in plans:
+        #    plan.count_load(PlanWeek.objects.filter(plan_id = plan.id).values_list('weeklyHours'))
         return render(request, 'plan/season.html', {'user_id': user_id, 'season': season, 'races': races, 'plans': plans})
 
 class RaceView(generic.View):
@@ -183,7 +184,9 @@ class RaceView(generic.View):
                     form = NewRaceForm(request.POST)
                     if form.is_valid():
                         data = form.cleaned_data
-                        race = Race().save_data(data, season_id)
+                        race = Race()
+                        race.save_data(data, season_id)
+                        race.save()
                         string = '/plan/' + user_id + '/season/' + season_id + '/'
                         return HttpResponseRedirect(string)
                 else:
@@ -198,15 +201,29 @@ class RaceView(generic.View):
 class PlanView(generic.View):
 
     def new_plan(request, user_id, season_id):
-        csrf_protect
-        if request.method == 'POST':
-            form = NewPlan(request.POST)
-            if form.is_valid():
-                string = '/plan/' + user_id + '/season/' + season_id + '/'
-                return HttpResponseRedirect(string)
-        else:
-            form = NewPlan()
-        return render(request, 'plan/new_plan.html', {'form': form, 'user_id':user_id, 'season_id': season_id})
+        
+        
+        
+        if request.user.is_authenticated():
+            if str(request.user.id) == user_id:
+                csrf_protect
+                if request.method == 'POST':
+                    form = NewPlanForm(request.POST)
+                    if form.is_valid():
+                        data = form.cleaned_data
+                        plan = Plan()
+                        plan.save_data(data, season_id)
+                        plan.save()
+                        string = '/plan/' + user_id + '/season/' + season_id + '/'
+                        return HttpResponseRedirect(string)
+                else:
+                    today = date.today()
+                    form = NewPlanForm()
+                return render(request, 'plan/new_plan.html', {'form': form, 'user_id':user_id, 'season_id': season_id})
+            messages = ('You do not have access to this site!',)
+            return render(request, 'default_sites/message_site_logged.html', {'messages': messages})
+        messages = ('You are not authorised to access this site!',)
+        return render(request, 'default_sites/message_site.html', {'messages': messages})
     
     def plan(request, user_id, plan_id):
         plan = get_object_or_404(Plan, pk=plan_id)
