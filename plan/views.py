@@ -3,6 +3,8 @@ from django.http import HttpResponse, Http404, HttpResponseRedirect
 from django.template.loader import *
 from django.views import generic
 import base64
+from datetime import time, tzinfo
+from django.utils import timezone
 from plan.model.Profile import Profile
 from plan.model.Season import Season
 from plan.model.Race import Race
@@ -14,7 +16,7 @@ from django.shortcuts import render, redirect
 from django.utils.encoding import force_bytes, force_text
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.template.loader import render_to_string
-from plan.forms import SignupForm, EditProfileForm, NewSeasonForm
+from plan.forms import SignupForm, EditProfileForm, NewSeasonForm, NewRaceForm
 from plan.tokens import account_activation_token
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.views import logout_then_login
@@ -160,9 +162,8 @@ class SeasonView(generic.View):
                 return render(request, 'plan/new_season.html', {'form': form, 'user_id':user_id})
             messages = ('You do not have access to this site!',)
             return render(request, 'default_sites/message_site_logged.html', {'messages': messages})
-        messages = ('You are not authorised t access this site!',)
+        messages = ('You are not authorised to access this site!',)
         return render(request, 'default_sites/message_site.html', {'messages': messages})
-        
     
     def season(request, user_id, season_id):
         season = get_object_or_404(Season, pk=season_id)
@@ -175,15 +176,24 @@ class SeasonView(generic.View):
 class RaceView(generic.View):
 
     def new_race(request, user_id, season_id):
-        csrf_protect
-        if request.method == 'POST':
-            form = NewRace(request.POST)
-            if form.is_valid():
-                string = '/plan/' + user_id + '/season/' + season_id + '/'
-                return HttpResponseRedirect(string)
-        else:
-            form = NewRace()
-        return render(request, 'plan/new_race.html', {'form': form, 'user_id':user_id, 'season_id': season_id})
+        if request.user.is_authenticated():
+            if str(request.user.id) == user_id:
+                csrf_protect
+                if request.method == 'POST':
+                    form = NewRaceForm(request.POST)
+                    if form.is_valid():
+                        data = form.cleaned_data
+                        race = Race().save_data(data, season_id)
+                        string = '/plan/' + user_id + '/season/' + season_id + '/'
+                        return HttpResponseRedirect(string)
+                else:
+                    today = date.today()
+                    form = NewRaceForm(initial={'priority': 1, 'date': '{}-{:02d}-{}'.format(today.day, today.month, today.year), 'time': '0:00:00'})
+                return render(request, 'plan/new_race.html', {'form': form, 'user_id':user_id, 'season_id': season_id})
+            messages = ('You do not have access to this site!',)
+            return render(request, 'default_sites/message_site_logged.html', {'messages': messages})
+        messages = ('You are not authorised to access this site!',)
+        return render(request, 'default_sites/message_site.html', {'messages': messages})
 
 class PlanView(generic.View):
 

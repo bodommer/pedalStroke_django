@@ -18,3 +18,11 @@ class Race(models.Model):
 
     def __str__(self):
         return "{} {}".format(self.name, self.date.year)
+
+    def save_data(self, data, season_id):
+        self.date = data['date']
+        self.name = data['name']
+        self.priority = data['priority']
+        self.time = data['time']
+        self.season_id = Season(season_id)
+        self.save()
