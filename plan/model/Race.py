@@ -14,7 +14,14 @@ class Race(models.Model):
     name = models.CharField(max_length=80, default="")
     priority = models.PositiveIntegerField('Priority', choices=PRIORITY, default=PRIORITY[0])
     time = models.TimeField(time(0,0,0))
-    season_id = models.ForeignKey(Season, on_delete=models.CASCADE)
+    parent_season = models.ForeignKey(Season, on_delete=models.CASCADE)
 
     def __str__(self):
         return "{} {}".format(self.name, self.date.year)
+
+    def save_data(self, data, season_id):
+        self.date = data['date']
+        self.name = data['name']
+        self.priority = data['priority']
+        self.time = data['time']
+        self.parent_season = Season(season_id)

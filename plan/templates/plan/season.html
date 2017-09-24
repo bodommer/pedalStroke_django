@@ -1,13 +1,14 @@
-{% extends "plan/base.html" %}
+{% extends "plan/base_logged.html" %}
 
 {% block content %}
 
 <h3>Season {{ season.year }}</h3>
+	<h4>Races of this season</h4>
 	{% if races %}
 	    <table>
-	    	<th>Race name</th><th>Date</th><th>Priority</th><th>Estimated duration</th>
+	    	<th>Race name</th><th>Date</th><th class='priority'>Priority</th><th class='est-duration'>Estimated duration</th>
 		    {% for race in races %}
-		        <tr><td>{{ race.name }}</td><td>{{ race.date }}</td><td>{{ race.priority }}</td><td>{{ race.time }}</td></tr>
+		        <tr><td>{{ race.name }}</td><td>{{ race.date }}</td><td class='priority'>{{ race.priority }}</td><td class='est-duration'>{{ race.time }}</td></tr>
 	    {% endfor %}
 	    </table>
 	    </ul>
@@ -16,11 +17,12 @@
 	{% endif %}
 	<a href={% url 'plan:new race' user_id season.id %}>Create a new race</a>
 	
+	<h4>Plans for this season</h4>
 	{% if plans %}
 		<table>
-	    	<th>#</th><th>Start date</th><th>End date</th><th>Duration(weeks)</th><th>Load</th>
+	    	<th class='id'>#</th><th>Plan Name</th><th>Start date</th><th class='end-date'>End date</th><th class='duration'># of Weeks</th><th class='load'>Load</th>
 		    {% for plan in plans %}
-		        <tr><td><a href={% url 'plan:plan' user_id plan.id %}>{{ plan.id }}</a></td><td>{{ plan.planStart }}</td><td>{{ plan.planEnd }}</td><td>{{ plan.id }}</td><td>{{ plan.load }}</td></tr>
+		        <tr><td class='id'><a href={% url 'plan:plan' user_id plan.id %}>{{ plan.id }}</a></td><td>{{ plan.name }}</td><td>{{ plan.planStart }}</td><td class='end-date'>{{ plan.planEnd }}</td><td class='duration'>{{ plan.id }}</td><td class='load'>{{ plan.load }}</td></tr>
 	    {% endfor %}
 	    </table>
 	    </ul>

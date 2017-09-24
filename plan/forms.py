@@ -1,9 +1,9 @@
 from django import forms
-from django.utils import timezone
+from django.utils import timezone 
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
-from .model import Profile, Season
-from datetime import date
+from .model import Profile, Season, Race, Plan
+from datetime import date, time
 
 class LoginForm(forms.Form):
     username = forms.CharField(label='Username', max_length=32)
@@ -21,17 +21,21 @@ class NewSeasonForm(forms.Form):
     
     class Meta:
         model = Season
-        field = ('year')
+        fields = ('year')
 
-class NewRace(forms.Form):
+class NewRaceForm(forms.Form):
     DATE_INPUT_FORMATS = ('%d-%m-%Y','%Y-%m-%d')
-    
     name = forms.CharField(label='Race name', max_length=50)
     date = forms.DateField(label='Race day', input_formats=DATE_INPUT_FORMATS)
     priority = forms.IntegerField(label='Priority', max_value=3, min_value=1)
     time = forms.TimeField(label='Expected duration')
     
-class NewPlan(forms.Form):
+    class Meta:
+        model = Race
+        fields = ('name', 'date', 'priority', 'time')
+
+    
+class NewPlanForm(forms.Form):
     PLAN_CHOICES = (
         ('normal', 'Normal'),
         ('reversed', 'Reversed')
@@ -44,6 +48,10 @@ class NewPlan(forms.Form):
     planEnd = forms.DateField(label='Plan End', input_formats=DATE_INPUT_FORMATS)
     annualHours = forms.ChoiceField(HOURS_CHOICES)
     typeOfPlan = forms.ChoiceField(PLAN_CHOICES)
+    
+    class Meta:
+        model = Plan
+        fields = ('name', 'planStart', 'planEnd', 'annualHours', 'typeOfPlan')
     
 class EditProfileForm(forms.Form):
     SKILL_CHOICES = (

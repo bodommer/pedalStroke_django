@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django.core.validators import MaxValueValidator
 
 class Profile(models.Model):
     SKILL_CHOICES = (
@@ -30,7 +31,7 @@ class Profile(models.Model):
                                 choices=SKILL_CHOICES, default='endurance')
 
     def __str__(self):
-        return "{} ({})".format(self.name, self.age)
+        return "User ({})".format(self.age)
     
     def updateData(self, field):
         self.cp60 = field['cp60']
