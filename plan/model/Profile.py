@@ -31,7 +31,7 @@ class Profile(models.Model):
                                 choices=SKILL_CHOICES, default='endurance')
 
     def __str__(self):
-        return "{} ({})".format(self.name, self.age)
+        return "User ({})".format(self.age)
     
     def updateData(self, field):
         self.cp60 = field['cp60']

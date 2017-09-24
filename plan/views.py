@@ -23,7 +23,8 @@ from django.core.mail import EmailMessage
 from django.contrib.auth.models import User
 from django.views.decorators.csrf import csrf_protect
 from django.forms.models import model_to_dict
-from datetime import date
+from datetime import date, datetime
+from django.db import connection
 
 class IndexView(generic.View):
 
@@ -201,9 +202,6 @@ class RaceView(generic.View):
 class PlanView(generic.View):
 
     def new_plan(request, user_id, season_id):
-        
-        
-        
         if request.user.is_authenticated():
             if str(request.user.id) == user_id:
                 csrf_protect
@@ -214,6 +212,14 @@ class PlanView(generic.View):
                         plan = Plan()
                         plan.save_data(data, season_id)
                         plan.save()
+                        
+                        with connection.cursor() as cursor:
+                            cursor.execute("SELECT * FROM plan_weeklyhours WHERE annualHours = '{}'".format(plan.annualHours))
+                            weeklyHours = cursor.fetchone()
+                        aRaces = Race.objects.filter(parent_season=season_id, priority=3)
+                        allRaces = Race.objects.filter(parent_season=season_id)
+                        
+                        plan.createPlan(weeklyHours, request.user.profile, aRaces, allRaces)
                         string = '/plan/' + user_id + '/season/' + season_id + '/'
                         return HttpResponseRedirect(string)
                 else:
@@ -227,7 +233,10 @@ class PlanView(generic.View):
     
     def plan(request, user_id, plan_id):
         plan = get_object_or_404(Plan, pk=plan_id)
-        return render(request, 'plan/plan.html', {'plan': plan})
+        planWeeks = PlanWeek.objects.filter(parent_plan=plan_id)
+        for pw in planWeeks:
+            pw.prepareData()
+        return render(request, 'plan/plan.html', {'plan': plan, 'planWeeks': planWeeks})
 
 def logout(request):
     csrf_protect

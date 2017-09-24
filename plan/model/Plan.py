@@ -1,6 +1,7 @@
 from django.db import models
 from django.utils import timezone
-from datetime import date, timedelta
+from datetime import date, timedelta, datetime
+import datetime
 from plan.model.Season import Season
 
 class Plan(models.Model):
@@ -21,7 +22,7 @@ class Plan(models.Model):
     parent_season = models.ForeignKey(Season, on_delete=models.CASCADE)
 
     def __str__(self):
-        return "{}-hour plan for {}".format(self.annualHours, self.season_id)
+        return "{}-hour plan for {}".format(self.annualHours, self.name)
 
     def count_load(self, weekset):
         load = 0
@@ -38,58 +39,29 @@ class Plan(models.Model):
         self.planEnd = data['planEnd']
         self.parent_season = Season(season_id)
         
-    def createPlan(self, annualHours, season, typeOfPlan, planStart, planEnd, activeUser, age, id=0):
-        errordata = []
-        if not self.setAnnualHours(annualHours):
-            errordata.append('annual hours')
-        if not self.setTypeOfPlan(typeOfPlan):
-            errordata.append('type of plan')
-        if not self.setPlanStart(planStart):
-            errordata.append('start of plan - must be monday')
-        if not self.setPlanEnd(planEnd):
-            errordata.append('end of plan')
-        if errordata != []:
-            errordata = ', '.join(errordata)
-            self.errordata = errordata
-            return
-        weeksCount = (self.planEnd - self.planStart).days // 7 + 1      #spocita ake dlhe je obdobie
-        planWeeks = self.createPlanWeeks(weeksCount, season)     #vytvori treningove tyzdne - urci tyzden + pondelok, priradi tyzdnom zoznam pretekov
-        peak = self.whenIsPeakRace(planWeeks, weeksCount)        #vrati cisla tyzdnov, kedy su Ackove preteky 
-        peakPeriods = self.makePeakPeriods(peak, activeUser, age)        #spravi zavodne obdobia na zaklade Ackovych pretekov
-        self.assignRaceWeeks(planWeeks, peakPeriods)
-        if peakPeriods == []:
-            self.setOtherWeeks(planWeeks, weeksCount-1, typeOfPlan, weeksCount-1, age)   
-        else:         
-            self.setOtherWeeks(planWeeks, weeksCount-1, typeOfPlan, peakPeriods[0], age)
-        self.setSkillTraining(planWeeks, activeUser, annualHours)
-        self.planWeeks = planWeeks
-        self.setAllRaces(season)
+    def createPlan(self, weeklyHours, userProfile, aRaces, allRaces):
+        self.weeksCount = (self.planEnd - self.planStart).days // 7 + 1      #counts the duration of the plan in weeks
+        peak = self.createPlanWeeks(aRaces)     #creates PlanWeeks - sets week #, monday, assigns races to races AND returns week #s that contain A-races 
+        #peak = self.whenIsPeakRace(weeksCount)        #returns week #s that contain A-races 
+        peakPeriods = self.makePeakPeriods(peak, userProfile.age)        #creates peak training periods according to A-races
+        self.assignRaceWeeks(peakPeriods)        #assigns peak training periods to its weeks
+        if peakPeriods == []: #if peak periods do not exist, classic model applies to all other weeks
+            self.setOtherWeeks(self.typeOfPlan, self.weeksCount-1, userProfile.age)   
+        else:         # if peak periods exist, other weeks are set their periods according to these peak periods
+            self.setOtherWeeks(self.typeOfPlan, peakPeriods[0], userProfile.age)
+        self.setSkillTraining(userProfile, weeklyHours) # sets skill training to weeks according to training period and profile settings
+        self.setAllRaces(allRaces) # assign B- and C- races to their weeks
         self.correct = True
-        self.errordata = errordata
-        # po dokonceni vytvarania planu zacne ukladat data do databazy (ak vsetko prebehlo v poriadku a spravne)
-        if self.errordata == []:
-            conn= pymysql.connect(host=self.server,user=self.username,password=self.password,db=self.database,charset=self.charset,cursorclass=pymysql.cursors.DictCursor)
-            a=conn.cursor()
-            add_plan = ("INSERT INTO tp_plan VALUES (%s, %s, %s, %s, %s, %s)")
-            data_plan = (id, annualHours, typeOfPlan, planStart, planEnd, season)
-            a.execute(add_plan, data_plan)
-            conn.commit()
-            get_id = ("SELECT id FROM tp_plan WHERE annualHours={} AND season_id={}".format(annualHours, season))
-            a.execute(get_id)
-            planID = a.fetchone()
-            planID = planID['id']
-            for p in self.planWeeks:
-                add_planWeek = ("INSERT INTO tp_planweek VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)")
-                data_planWeek = (id, p.getAEndurance(), p.getEForce(), p.getEndurance(), p.getForce(), p.getGym(), p.getMaxPower(), p.getMonday(), p.getPeriod(), p.getSpeedSkills(), p.getTest(), p.getWeek(), p.getWeeklyHours(), p.getRace(), planID)
-                a.execute(add_planWeek, data_planWeek)
-                conn.commit()
-            a.close()
-            conn.close()
+        
+        for week in self.planWeeks: # after planWeeks are complete, they are saved into the db
+            week.save()
             
-    def createPlanWeeks(self, weeksCount, season):
-        planWeeks = [0]*weeksCount
-        for i in range(weeksCount):
-            weekplan = PlanWeek()
+            
+    # creates instances of PlanWeeks for the plan, assigns standard values to properties 
+    def createPlanWeeks(self, aRaces):
+        self.planWeeks = [0]*self.weeksCount
+        for i in range(self.weeksCount):
+            weekplan = PlanWeek(parent_plan = self)
             weekplan.setWeek(i+1)
             weekplan.setMonday(self.planStart + i*datetime.timedelta(days=7))
             weekplan.setPeriod('')
@@ -101,31 +73,30 @@ class Plan(models.Model):
             weekplan.setAEndurance(False)
             weekplan.setMaxPower(False)
             weekplan.setTest(False)
-            planWeeks[i] = weekplan
-        conn= pymysql.connect(host=self.server,user=self.username,password=self.password,db=self.database,charset=self.charset,cursorclass=pymysql.cursors.DictCursor)
-        a=conn.cursor()
-        get_races = ("SELECT date FROM tp_seasonrace WHERE season_id={} AND priority=3".format(season))
-        a.execute(get_races)
-        races = a.fetchall()
-        a.close()
-        conn.close()
-        for data in races:     #priradzovanie pretekov k tyzdnom
-            for week in planWeeks:      #skusa pre kazdy tyzden:
+            weekplan.races = []
+            self.planWeeks[i] = weekplan
+
+        peaks = []
+        for data in aRaces:     #priradzovanie pretekov k tyzdnom
+            for week in self.planWeeks:      #skusa pre kazdy tyzden:
                 mon = week.getMonday()
-                if mon <= data['date'] < mon + datetime.timedelta(days=7):  # ak je datum pretekov v danom tyzdni
+                if mon <= data.date < mon + datetime.timedelta(days=7):  # ak je datum pretekov v danom tyzdni
                     week.setRace(data)
+                    if data.priority == 3: # checks if the races assigned is High priority
+                        peaks.append(week.getWeek()) # adds A-race into the list of peaks
                     break
-        return planWeeks
-        
-    def whenIsPeakRace(self, planWeeks, weeksCount):
+        return peaks
+      
+    #deprecated. createPlanWeeks'  if data['priority'] == 3 does the job instead and returns the same list 
+    def whenIsPeakRace(self, weeksCount):
         peaks = []
         for i in range(weeksCount-1, -1, -1):
-            for r in planWeeks[i].races:
+            for r in self.planWeeks[i].races:
                 if i not in peaks:
-                    peaks.append(planWeeks[i].week)
+                    peaks.append(self.planWeeks[i].week)
         return peaks
     
-    def makePeakPeriods(self, peak, activeUser, age):   
+    def makePeakPeriods(self, peak, age):   
         if peak == []:
             return [] 
         if age > 40: #or gender = woman
@@ -157,13 +128,15 @@ class Plan(models.Model):
                 peakPeriods.append(peak[ref]) 
             return peakPeriods
             
-    def assignRaceWeeks(self, planWeeks, racePeriods):
-        for week in planWeeks:
+    def assignRaceWeeks(self, racePeriods):
+        for week in self.planWeeks:
             if week.getWeek() in racePeriods:
                 week.setPeriod('Racing-1')
     
-    def setOtherWeeks(self, planWeeks, weekNumber, typ, peak0, age):
+    def setOtherWeeks(self, typ, peak0, age):
         index = 0
+        weekNumber = self.weeksCount - 1
+        
         if age > 39: #or gender = woman
             if typ == 'normal':
                 periods = ['Peak 2', 'Peak 1', 
@@ -203,35 +176,28 @@ class Plan(models.Model):
                 periods.append('Preparatory-1') 
         while weekNumber > -1:
             if weekNumber > 43 and weekNumber > peak0:
-                planWeeks[weekNumber].setPeriod('Recovery-1')
+                self.planWeeks[weekNumber].setPeriod('Recovery-1')
             else:
-                if planWeeks[weekNumber].getPeriod() == 'Racing-1':
+                if self.planWeeks[weekNumber].getPeriod() == 'Racing-1':
                     index = 0
                 else:
-                    planWeeks[weekNumber].setPeriod(periods[index])
+                    self.planWeeks[weekNumber].setPeriod(periods[index])
                     index += 1
             weekNumber -= 1
-        for i in range(len(planWeeks)):
-            if planWeeks[i].getPeriod() == 'Racing-1':
-                if planWeeks[i-1].getPeriod == 'Racing-1':
-                    planWeeks[i+2].setPeriod('Recovery-1')
-                planWeeks[i+1].setPeriod('Recovery-1')
+        for i in range(len(self.planWeeks)):
+            if self.planWeeks[i].getPeriod() == 'Racing-1':
+                if self.planWeeks[i-1].getPeriod == 'Racing-1':
+                    self.planWeeks[i+2].setPeriod('Recovery-1')
+                self.planWeeks[i+1].setPeriod('Recovery-1')
         
-    def setSkillTraining(self, planWeeks, activeUser, annualHours):
-        conn= pymysql.connect(host=self.server,user=self.username,password=self.password,db=self.database,charset=self.charset,cursorclass=pymysql.cursors.DictCursor)
-        a=conn.cursor()
-        get_props = ("SELECT weak1, weak2, strong1, strong2 FROM tp_user WHERE id={}".format(activeUser))
-        a.execute(get_props)
-        data = a.fetchone()
-        a.close()
-        conn.close() 
-        weak = data['weak1']
-        weak2 = data['weak2']
-        strong = data['strong1']
+    def setSkillTraining(self, userProfile, weeklyHours):
+        weak = userProfile.weak1
+        weak2 = userProfile.weak2
+        strong = userProfile.strong1
         #strong2 = data['strong2']
         if True:
         #if activeUser.getAge() < 40: #pre 4-tyzdnove cykly
-            for week in planWeeks:
+            for week in self.planWeeks:
                 periodName = week.getPeriod()[:4]
                 try:
                     periodCount = int(week.getPeriod()[-3])
@@ -337,37 +303,29 @@ class Plan(models.Model):
                     week.setSpeedSkills(True)
                     week.setTest(True)
                     week.setGym('FM')
-            for week in planWeeks:
+                    
+            periods = ['annualHours', 'Preparatory-1', 'Base 1-1', 'Base 1-2', 'Base 1-3', 'Base 1-4', 
+               'Base 2-1', 'Base 2-2', 'Base 2-3', 'Base 2-4', 'Base 3-1', 'Base 3-2', 'Base 3-3', 'Base 3-4', 
+               'Build 1-1', 'Build 1-2', 'Build 1-3', 'Build 1-4', 'Build 2-1', 'Build 2-2', 'Build 2-3', 'Build 2-4', 
+               'Peak 1', 'Peak 2', 'Racing-1', 'Recovery-1']            
+        
+            #assigns Force Maintenance to remamining weeks and sets weekly hours to all weeks
+            for week in self.planWeeks:
                 if not week.getForce():
                     if week.getPeriod()[:4] in ('Buil', 'Base'):
                         week.setGym('FM')
-            conn= pymysql.connect(host=self.server,user=self.username,password=self.password,db=self.database,charset=self.charset,cursorclass=pymysql.cursors.DictCursor)
-            a=conn.cursor()
-            get_hrs = ("SELECT * FROM weeklyhours WHERE annualHours={}".format(annualHours))
-            a.execute(get_hrs)
-            data = a.fetchone()
-            a.close()
-            conn.close()
-            for week in planWeeks:
-                period = data['{}'.format(week.getPeriod())]
+                period = weeklyHours[periods.index(week.getPeriod())]
                 week.setWeeklyHours(period)
  
-    def setAllRaces(self, season): 
-        conn= pymysql.connect(host=self.server,user=self.username,password=self.password,db=self.database,charset=self.charset,cursorclass=pymysql.cursors.DictCursor)
-        a=conn.cursor()
-        get_races = ("SELECT * FROM tp_seasonrace WHERE season_id={}".format(season))
-        a.execute(get_races)
-        races = a.fetchall()
-        a.close()
-        conn.close()
+    def setAllRaces(self, races): 
         for week in self.planWeeks:      #skusa pre kazdy tyzden:
             week.races = []
         if races:
-            for data in races:     #priradzovanie pretekov k tyzdnom
+            for race in races:     #priradzovanie pretekov k tyzdnom
                 for week in self.planWeeks:      #skusa pre kazdy tyzden:
                     mon = week.getMonday()
-                    if mon <= data['date'] < mon + datetime.timedelta(days=7):  # ak je datum pretekov v danom tyzdni
-                        week.setRace(data['name'])
+                    if mon <= race.date < mon + datetime.timedelta(days=7):  # ak je datum pretekov v danom tyzdni
+                        week.setRace(race.name)
                         break
     
 
@@ -389,6 +347,170 @@ class PlanWeek(models.Model):
 
     def __str__(self):
         return "Week {}".format(self.week)
+    
+    def setWeek(self, week):
+        self.week = week
+
+    def getWeek(self):
+        try:
+            return self.week
+        except:
+            return None
+
+    def setMonday(self, monday):
+        self.monday = monday
+
+    def getMonday(self):
+        try:
+            return self.monday
+        except:
+            return None
+        
+    def setRace(self, race):
+        a = self.races
+        self.races.append(race)
+        
+    def getRace(self):
+        r = '\n'.join(self.races)
+        return r
+
+    def setPeriod(self, period, periodWeek=1):
+        self.period = period
+        self.periodWeek = periodWeek    
+    
+    def getPeriod(self):
+        try:
+            return self.period #, self.periodWeek
+        except:
+            return None
+    
+    def setWeeklyHours(self, hours):
+        self.weeklyHours = hours
+
+    def getWeeklyHours(self):
+        try:
+            return self.weeklyHours
+        except:
+            return None
+
+    def getWeeklyHoursFromDB(self, period, week):
+        return 5
+
+    def setGym(self, gym):
+        self.gym = gym
+        
+    def getGym(self):
+        try:
+            return self.gym
+        except:
+            return None
+
+    def setEndurance(self, endurance):
+        self.endurance = endurance
+
+    def getEndurance(self):
+        try:
+            return self.endurance
+        except:
+            return None
+
+    def setForce(self, force):
+        self.force = force
+
+    def getForce(self):
+        try:
+            return self.force
+        except:
+            return None
+        
+    def setSpeedSkills(self, speedSkills):
+        self.speedSkills = speedSkills
+
+    def getSpeedSkills(self):
+        try:
+            return self.speedSkills
+        except:
+            return None
+        
+    def setEForce(self, eForce):
+        self.eForce = eForce
+
+    def getEForce(self):
+        try:
+            return self.eForce
+        except:
+            return None
+        
+    def setAEndurance(self, aEndurance):
+        self.aEndurance = aEndurance
+
+    def getAEndurance(self):
+        try:
+            return self.aEndurance
+        except:
+            return None
+        
+    def setMaxPower(self, maxPower):
+        self.maxPower = maxPower
+
+    def getMaxPower(self):
+        try:
+            return self.maxPower
+        except:
+            return None
+        
+    def setTest(self, test):
+        self.test = test
+
+    def getTest(self):
+        try:
+            return self.test
+        except:
+            return None
+
+    def prepareData(self):
+        if self.endurance:
+            self.endurance = 'X'
+        else:
+            self.endurance = ''
+        if self.force:
+            self.force = 'X'
+        else:
+            self.force = ''
+        if self.speedSkills:
+            self.speedSkills = 'X'
+        else:
+            self.speedSkills = ''
+        if self.aEndurance:
+            self.aEndurance = 'X'
+        else:
+            self.aEndurance = ''
+        if self.eForce:
+            self.eForce = 'X'
+        else:
+            self.eForce = ''
+        if self.maxPower:
+            self.maxPower = 'X'
+        else:
+            self.maxPower = ''    
+        if self.test:
+            self.test = 'X'
+        else:
+            self.test = '' 
+        if self.races != '[]':
+            string = self.races[2:-2]
+            races = string.split(',')
+            self.races = ', '.join(races)
+        else:
+            self.races = '-'       
+        self.monday = self.monday.strftime('%b, %d')
+        if self.gym == 'False':
+            self.gym = '-'
+        
+        
+        
+        
+        
     
 class PlanWeekDay(models.Model):
     dailyHours = models.DecimalField(max_digits=4, decimal_places=2)

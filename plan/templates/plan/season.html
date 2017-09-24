@@ -20,9 +20,9 @@
 	<h4>Plans for this season</h4>
 	{% if plans %}
 		<table>
-	    	<th class='id'>#</th><th>Plan Name</th><th>Start date</th><th>End date</th><th>Duration(weeks)</th><th>Load</th>
+	    	<th class='id'>#</th><th>Plan Name</th><th>Start date</th><th class='end-date'>End date</th><th class='duration'># of Weeks</th><th class='load'>Load</th>
 		    {% for plan in plans %}
-		        <tr><td class='id'><a href={% url 'plan:plan' user_id plan.id %}>{{ plan.id }}</a></td><td>{{ plan.name }}</td><td>{{ plan.planStart }}</td><td>{{ plan.planEnd }}</td><td class='duration'>{{ plan.id }}</td><td class='load'>{{ plan.load }}</td></tr>
+		        <tr><td class='id'><a href={% url 'plan:plan' user_id plan.id %}>{{ plan.id }}</a></td><td>{{ plan.name }}</td><td>{{ plan.planStart }}</td><td class='end-date'>{{ plan.planEnd }}</td><td class='duration'>{{ plan.id }}</td><td class='load'>{{ plan.load }}</td></tr>
 	    {% endfor %}
 	    </table>
 	    </ul>

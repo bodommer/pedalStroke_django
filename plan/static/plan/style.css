@@ -88,12 +88,33 @@ footer p {
 
 td, tr, th {
 padding-right: 5%;
-width: 30%;
+width: 24%;
 text-align: left;
 }
-.id, .priority, .duration, .load {
+.id, .priority, .load {
 width: 5%;
 }
 .est-duration {
 text-align: center;
+}
+.duration {
+	width: 20%;
+}
+.duration td {
+text-align: center;	
+}
+.end-date {
+width: auto;
+margin-right: 1%;
+}
+#planWeeks {
+border-spacing: 0;
+}
+#planWeeks td, tr, th{
+text-align: center;
+}
+#planWeeks td {
+border-top:solid 1px black;
+border-collapse: collapse;
+padding: 0 0.5rem;
 }
