@@ -16,6 +16,8 @@ urlpatterns = [
     url(r'^(?P<user_id>[0-9]+)/season/(?P<season_id>[0-9]+)/new-race/$', views.RaceView.new_race, name='new race'),
     url(r'^(?P<user_id>[0-9]+)/season/(?P<season_id>[0-9]+)/new-plan/$', views.PlanView.new_plan, name='new plan'),
     url(r'^(?P<user_id>[0-9]+)/plan/(?P<plan_id>[0-9]+)/$', views.PlanView.plan, name='plan'),
+    url(r'^(?P<user_id>[0-9]+)/season/(?P<season_id>[0-9]+)/race/(?P<race_id>[0-9]+)/$', views.RaceView.race, name='race'),
+    url(r'^(?P<user_id>[0-9]+)/season/(?P<season_id>[0-9]+)/race/(?P<race_id>[0-9]+)/edit/$', views.RaceView.raceEdit, name='race edit'),
     url(r'^about/$', views.IndexView.about, name='about'),
     url(r'^activate/(?P<uidb64>[0-9A-Za-z_\-]+)/(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,20})/$',
     views.UserView.activate, name='activate'),

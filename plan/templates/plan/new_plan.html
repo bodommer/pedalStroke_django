@@ -9,4 +9,5 @@
 	  {% endfor %}
 	    <input type="submit" value="Submit" />
 	</form>
+	<a href="{% url 'plan:season' user.id season_id %}">Go back</a>
 {% endblock %}

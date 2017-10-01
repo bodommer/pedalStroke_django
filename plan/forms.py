@@ -75,3 +75,22 @@ class EditProfileForm(forms.Form):
                                 choices=SKILL_CHOICES)
     weak2 = forms.ChoiceField(label='Second weakest skill',
                                choices=SKILL_CHOICES)
+    
+class EditRaceForm(forms.Form):
+    PRIORITY = (
+        (1, 'Low'),
+        (2, 'Medium'),
+        (3, 'High')
+    )
+    
+    DATE_INPUT_FORMATS = ('%d-%m-%Y','%Y-%m-%d')
+    
+    name = forms.CharField(label='Race Name', max_length=80)
+    date = forms.DateField(label='Race Date', input_formats=DATE_INPUT_FORMATS)
+    priority = forms.ChoiceField(label='Priority',
+                                choices=PRIORITY)
+    time = forms.TimeField(label='Expected duration')
+    
+    class Meta:
+        model = Race
+        fields = ('name', 'date', 'priority', 'time')

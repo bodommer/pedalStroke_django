@@ -5,10 +5,11 @@
 <h3>Season {{ season.year }}</h3>
 	<h4>Races of this season</h4>
 	{% if races %}
+		<!-- <form action={% url 'plan:' user_id season_id %} method="POST"> -->
 	    <table>
 	    	<th>Race name</th><th>Date</th><th class='priority'>Priority</th><th class='est-duration'>Estimated duration</th>
 		    {% for race in races %}
-		        <tr><td>{{ race.name }}</td><td>{{ race.date }}</td><td class='priority'>{{ race.priority }}</td><td class='est-duration'>{{ race.time }}</td></tr>
+		        <tr><td><a href={% url 'plan:race' user_id season.id race.id %}>{{ race.name }}</a></td><td>{{ race.date }}</td><td class='priority'>{{ race.priority }}</td><td class='est-duration'>{{ race.time }}</td></tr>
 	    {% endfor %}
 	    </table>
 	    </ul>
@@ -22,7 +23,7 @@
 		<table>
 	    	<th class='id'>#</th><th>Plan Name</th><th>Start date</th><th class='end-date'>End date</th><th class='duration'># of Weeks</th><th class='load'>Load</th>
 		    {% for plan in plans %}
-		        <tr><td class='id'><a href={% url 'plan:plan' user_id plan.id %}>{{ plan.id }}</a></td><td>{{ plan.name }}</td><td>{{ plan.planStart }}</td><td class='end-date'>{{ plan.planEnd }}</td><td class='duration'>{{ plan.id }}</td><td class='load'>{{ plan.load }}</td></tr>
+		        <tr><td class='id'>{{ plan.id }}</td><td><a href={% url 'plan:plan' user_id plan.id %}>{{ plan.name }}</a></td><td>{{ plan.planStart }}</td><td class='end-date'>{{ plan.planEnd }}</td><td class='duration'>{{ plan.id }}</td><td class='load'>{{ plan.load }}</td></tr>
 	    {% endfor %}
 	    </table>
 	    </ul>

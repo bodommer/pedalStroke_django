@@ -15,7 +15,7 @@ from django.shortcuts import render, redirect
 from django.utils.encoding import force_bytes, force_text
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.template.loader import render_to_string
-from plan.forms import SignupForm, EditProfileForm, NewSeasonForm, NewRaceForm, NewPlanForm
+from plan.forms import SignupForm, EditProfileForm, NewSeasonForm, NewRaceForm, NewPlanForm, EditRaceForm
 from plan.tokens import account_activation_token
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.views import logout_then_login
@@ -198,6 +198,41 @@ class RaceView(generic.View):
             return render(request, 'default_sites/message_site_logged.html', {'messages': messages})
         messages = ('You are not authorised to access this site!',)
         return render(request, 'default_sites/message_site.html', {'messages': messages})
+    
+    def race(request, user_id, season_id, race_id):
+        if request.user.is_authenticated():
+            if str(request.user.id) == user_id:
+                csrf_protect
+                race = Race.objects.filter(id=race_id)[0]
+                race.time = '{:d}:{:02d}:{:02d}'.format(race.time.hour, race.time.minute, race.time.second)
+                return render(request, 'plan/race.html', {'race': race, 'season_id': season_id})
+            messages = ('You do not have access to this site!',)
+            return render(request, 'default_sites/message_site_logged.html', {'messages': messages})
+        messages = ('You are not authorised to access this site!',)
+        return render(request, 'default_sites/message_site.html', {'messages': messages})
+    
+    def raceEdit(request, user_id, season_id, race_id):
+        if request.user.is_authenticated:
+            if str(request.user.id) == str(user_id):
+                csrf_protect
+                if request.method == 'POST':
+                    form = EditRaceForm(request.POST)
+                    if form.is_valid():
+                        data = form.cleaned_data
+                        race = Race.objects.filter(id=race_id, parent_season=season_id)[0]
+                        race.updateData(data)
+                        race.save()
+                        string = '/plan/' + str(user_id) + '/season/' + str(season_id) + '/race/' + str(race_id) + '/'
+                        return HttpResponseRedirect(string)
+                else:
+                    mod = Race.objects.get(id=race_id)
+                    form = EditRaceForm(initial=model_to_dict(mod))
+                return render(request, 'plan/race_edit.html', {'form': form, 'race_id': race_id, 'season_id': season_id, 'user_id': user_id})
+            else:
+                messages = ('You do not have the permission to edit this profile!',)
+                return render(request, 'default_sites/message_site_logged.html', {'messages': messages})
+        messages = ('To see the profile, please, log in.',)
+        return render(request, 'default_sites/message_site.html', {'messages': messages})        
 
 class PlanView(generic.View):
 
@@ -220,6 +255,7 @@ class PlanView(generic.View):
                         allRaces = Race.objects.filter(parent_season=season_id)
                         
                         plan.createPlan(weeklyHours, request.user.profile, aRaces, allRaces)
+                        plan.save()
                         string = '/plan/' + user_id + '/season/' + season_id + '/'
                         return HttpResponseRedirect(string)
                 else:
@@ -236,7 +272,7 @@ class PlanView(generic.View):
         planWeeks = PlanWeek.objects.filter(parent_plan=plan_id)
         for pw in planWeeks:
             pw.prepareData()
-        return render(request, 'plan/plan.html', {'plan': plan, 'planWeeks': planWeeks})
+        return render(request, 'plan/plan.html', {'plan': plan, 'planWeeks': planWeeks, 'season_id': plan.parent_season.id})
 
 def logout(request):
     csrf_protect
