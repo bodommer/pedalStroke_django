@@ -19,17 +19,12 @@ class Plan(models.Model):
                                   choices=PLAN_CHOICES, default='normal')
     planStart = models.DateField('Start of Plan', default=start)
     planEnd = models.DateField('End of Plan', default=end)
+    duration = models.PositiveIntegerField('Duration of plan', default=0)
+    load = models.PositiveIntegerField('Load', default=0)
     parent_season = models.ForeignKey(Season, on_delete=models.CASCADE)
 
     def __str__(self):
         return "{}-hour plan for {}".format(self.annualHours, self.name)
-
-    def count_load(self, weekset):
-        load = 0
-        print(weekset)
-        for a in weekset: 
-            load += a
-        self.load = load
         
     def save_data(self, data, season_id):
         self.name = data['name']
@@ -51,6 +46,8 @@ class Plan(models.Model):
             self.setOtherWeeks(self.typeOfPlan, peakPeriods[0], userProfile.age)
         self.setSkillTraining(userProfile, weeklyHours) # sets skill training to weeks according to training period and profile settings
         self.setAllRaces(allRaces) # assign B- and C- races to their weeks
+        self.count_load()
+        self.duration = len(self.planWeeks)
         self.correct = True
         
         for week in self.planWeeks: # after planWeeks are complete, they are saved into the db
@@ -81,7 +78,7 @@ class Plan(models.Model):
             for week in self.planWeeks:      #skusa pre kazdy tyzden:
                 mon = week.getMonday()
                 if mon <= data.date < mon + datetime.timedelta(days=7):  # ak je datum pretekov v danom tyzdni
-                    week.setRace(data)
+                    week.setRace(data.name)
                     if data.priority == 3: # checks if the races assigned is High priority
                         peaks.append(week.getWeek()) # adds A-race into the list of peaks
                     break
@@ -113,17 +110,22 @@ class Plan(models.Model):
             peakPeriods = []
             ref = 0
             while peak[ref] != peak[-1]:
+                print(peak[ref], ref, peak[-1])
                 minimum = min(len(peak)-ref, 3)
                 for i in range(1, minimum):
-                    if peak[ref] - peak[ref+i] < 3:
+                    if peak[ref+i] - peak[ref] < 3:
                         if peak[ref+i] < 6 - shorterPeriods:
+                            print('i got here')
                             peak.pop(ref+i)
                         else:
+                            print('i got here2')
                             peakPeriods.append([range(ref, ref+i+1)])
                             ref = peak[ref+i]
                     else:
+                        print('i got here3')
                         peakPeriods.append(peak[ref])
                 ref += i
+                print('i got here4')
             if peak[ref-1] - peak[ref] > 6 or peak[ref-1] - peak[ref] == 1:
                 peakPeriods.append(peak[ref]) 
             return peakPeriods
@@ -328,6 +330,14 @@ class Plan(models.Model):
                         week.setRace(race.name)
                         break
     
+    def count_load(self):
+        load = 0.0
+        for week in self.planWeeks:
+            print(week.weeklyHours) 
+            load += float(week.weeklyHours)
+            print(load)
+        self.load = round(load)
+        print(self.load)
 
 class PlanWeek(models.Model):
     aEndurance = models.PositiveSmallIntegerField(0)

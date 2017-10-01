@@ -25,3 +25,9 @@ class Race(models.Model):
         self.priority = data['priority']
         self.time = data['time']
         self.parent_season = Season(season_id)
+        
+    def updateData(self, form):
+        self.date = form['date']
+        self.name = form['name']
+        self.priority = form['priority']
+        self.time = form['time']

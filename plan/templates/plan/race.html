@@ -1,0 +1,18 @@
+{% extends "plan/base_logged.html" %}
+
+{% block content %} 
+	{% if race %}
+		<h3>Race detail</h3>
+		<p>
+		Race name: {{ race.name }} <br>
+		Race date: {{ race.date }} <br>
+		Priority: {{ race.priority }} <br>
+		Estimated duration: {{ race.time }} <br>
+		
+		<a href="{% url 'plan:race edit' user.id season_id race.id %}">Edit this race</a>
+		<a href="{% url 'plan:season' user.id season_id %}">Go back</a>
+	{% else %}
+		<p>Invalid data!
+	{% endif %}
+	</p>
+{% endblock %}

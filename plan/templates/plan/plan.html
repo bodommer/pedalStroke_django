@@ -14,6 +14,7 @@ Type of Plan: {{ plan.typeOfPlan}}<br>
 		<tr><td>{{ pw.week }}</td><td>{{ pw.monday }}</td><td>{{ pw.period }}</td><td>{{ pw.weeklyHours }}</td><td>{{ pw.races }}</td><td>{{ pw.gym }}</td><td>{{ pw.endurance }}</td><td>{{ pw.force }}</td><td>{{ pw.speedSkills }}</td><td>{{ pw.eForce }}</td><td>{{ pw.aEndurance }}</td><td>{{ pw.maxPower }}</td><td>{{ pw.test }}</td></tr>
 	{% endfor %}
 	</table>
+	<a href="{% url 'plan:season' user.id season_id %}">Go back</a>
 {% endif %}
 {% csrf_token %}
 	
