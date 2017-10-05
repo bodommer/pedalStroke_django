@@ -7,7 +7,7 @@
 		{% if seasons %}	
 		    <ul>
 		    {% for season in seasons %}
-		        <li><a href="{% url 'plan:season' user.id season.id %}">{{ season.year }}</a></li>
+		        <li><a href="{% url 'plan:season' user.id season.id %}">Season {{ season.year }}</a></li>
 		    {% endfor %}
 		    </ul>
 		{% else %}
