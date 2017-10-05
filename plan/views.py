@@ -65,7 +65,7 @@ class UserView(generic.View):
         return render(request, 'plan/login.html', {'form': form})
     
     def sign_up(request):
-        if request.user.is_authenticated():
+        if not request.user.is_authenticated():
             if request.method == 'POST':
                 form = SignupForm(request.POST)
                 if form.is_valid():
@@ -262,7 +262,6 @@ class RaceView(generic.View):
                     elif 'deleteRacesAll' in request.POST:
                         raceList = Race.objects.filter(parent_season=season_id)
                     for race in raceList:
-                        print(race.name, race.priority)
                         race.delete()
         return redirect('plan:season', user_id, season_id)
 
@@ -322,10 +321,7 @@ class PlanView(generic.View):
                         elif 'deletePlansAll' in request.POST:
                             planList = Plan.objects.filter(parent_season=season_id)
                         for plan in planList:
-                            print(plan.name, plan.load)
                             plan.delete()
-                    print(planList)
-                    print(request.POST.getlist('planSelection'))
         return redirect('plan:season', user_id, season_id)
 
 def logout(request):
