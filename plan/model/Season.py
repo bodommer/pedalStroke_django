@@ -8,3 +8,7 @@ class Season(models.Model):
 
     def __str__(self):
         return "Season {}".format(self.year)
+    
+    def save_data(self, year, parent_user):
+        self.year = year
+        self.parent_user = Profile(parent_user)

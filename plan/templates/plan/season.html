@@ -3,16 +3,23 @@
 {% block content %}
 
 <h3>Season {{ season.year }}</h3>
+	<form action={% url 'plan:delete season' user_id season.id %} method="POST">
+    {% csrf_token %}
+	<input type="submit" value="Delete this season" />
+	</form>
 	<h4>Races of this season</h4>
 	{% if races %}
-		<!-- <form action={% url 'plan:' user_id season_id %} method="POST"> -->
+		<form action={% url 'plan:delete races' user_id season.id %} method="POST">
+	    {% csrf_token %}
 	    <table>
-	    	<th>Race name</th><th>Date</th><th class='priority'>Priority</th><th class='est-duration'>Estimated duration</th>
+	    	<th class='checkbox' id='checkboxHeader'></th><th>Race name</th><th>Date</th><th class='priority'>Priority</th><th class='est-duration'>Estimated duration</th>
 		    {% for race in races %}
-		        <tr><td><a href={% url 'plan:race' user_id season.id race.id %}>{{ race.name }}</a></td><td>{{ race.date }}</td><td class='priority'>{{ race.priority }}</td><td class='est-duration'>{{ race.time }}</td></tr>
+		        <tr><td class='checkbox'><input type='checkbox' name="raceSelection" value='{{ race.id }}'></td><td><a href={% url 'plan:race' user_id season.id race.id %}>{{ race.name }}</a></td><td>{{ race.date }}</td><td class='priority'>{{ race.priority }}</td><td class='est-duration'>{{ race.time }}</td></tr>
 	    {% endfor %}
 	    </table>
-	    </ul>
+	    <input type="submit" value="Delete selected races" name="deleteRaces" />
+	    <input type="submit" value="Delete all races" name="deleteRacesAll" />
+	    </form>
 	{% else %}
 	    <p>No races created yet.</p>
 	{% endif %}
@@ -20,13 +27,17 @@
 	
 	<h4>Plans for this season</h4>
 	{% if plans %}
+		<form action={% url 'plan:delete plans' user_id season.id %} method="POST">
+	    {% csrf_token %}
 		<table>
-	    	<th class='id'>#</th><th>Plan Name</th><th>Start date</th><th class='end-date'>End date</th><th class='duration'># of Weeks</th><th class='load'>Load</th>
+	    	<th class='checkbox'></th><th class='id'>#</th><th>Plan Name</th><th>Start date</th><th class='end-date'>End date</th><th class='duration'># of Weeks</th><th class='load'>Load</th>
 		    {% for plan in plans %}
-		        <tr><td class='id'>{{ plan.id }}</td><td><a href={% url 'plan:plan' user_id plan.id %}>{{ plan.name }}</a></td><td>{{ plan.planStart }}</td><td class='end-date'>{{ plan.planEnd }}</td><td class='duration'>{{ plan.id }}</td><td class='load'>{{ plan.load }}</td></tr>
-	    {% endfor %}
+		        <tr><td class='checkbox'><input type='checkbox' name="planSelection" value='{{ plan.id }}'></td><td class='id'>{{ plan.id }}</td><td><a href={% url 'plan:plan' user_id plan.id %}>{{ plan.name }}</a></td><td>{{ plan.planStart }}</td><td class='end-date'>{{ plan.planEnd }}</td><td class='duration'>{{ plan.id }}</td><td class='load'>{{ plan.load }}</td></tr>
+	  		{% endfor %}
 	    </table>
-	    </ul>
+	    <input type="submit" value="Delete selected plans" name="deletePlans" />
+	    <input type="submit" value="Delete all plans" name="deletePlansAll" />
+	    </form>
 	{% else %}
 	    <p>No races created yet.</p>
 	{% endif %}

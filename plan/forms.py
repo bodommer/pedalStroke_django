@@ -94,3 +94,12 @@ class EditRaceForm(forms.Form):
     class Meta:
         model = Race
         fields = ('name', 'date', 'priority', 'time')
+        
+class DeleteSeasonForm(forms.Form):
+    pass
+
+class DeleteRaceForm(forms.Form):
+    pass
+
+class DeletePlanForm(forms.Form):
+    pass

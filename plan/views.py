@@ -15,7 +15,7 @@ from django.shortcuts import render, redirect
 from django.utils.encoding import force_bytes, force_text
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.template.loader import render_to_string
-from plan.forms import SignupForm, EditProfileForm, NewSeasonForm, NewRaceForm, NewPlanForm, EditRaceForm
+from plan.forms import SignupForm, EditProfileForm, NewSeasonForm, NewRaceForm, NewPlanForm, EditRaceForm, DeleteSeasonForm, DeleteRaceForm, DeletePlanForm
 from plan.tokens import account_activation_token
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.views import logout_then_login
@@ -46,7 +46,7 @@ class UserView(generic.View):
     def home(request, user_id):
         if request.user.is_authenticated:
             if str(request.user.id) == user_id:
-                seasons = Season.objects.filter(parent_user = request.user.id)
+                seasons = Season.objects.filter(parent_user = request.user.id).order_by('year')
                 return render(request, 'plan/home.html', {'user': request.user, 'seasons': seasons})
         return render(request, 'default_sites/unauthorised_access.html')
     
@@ -148,8 +148,9 @@ class SeasonView(generic.View):
                     form = NewSeasonForm(request.POST)
                     if form.is_valid():
                         data = form.cleaned_data
-                        if len(Season.objects.filter(user_id_id=user_id, year=data['year'])) == 0:
-                            season = Season(year=data['year'], user_id_id=user_id)
+                        if len(Season.objects.filter(parent_user=user_id, year=data['year'])) == 0:
+                            season = Season()
+                            season.save_data(year=data['year'], parent_user=user_id)
                             season.save()
                             string = '/plan/' + user_id + '/'
                             return HttpResponseRedirect(string)
@@ -164,8 +165,11 @@ class SeasonView(generic.View):
             return render(request, 'default_sites/message_site_logged.html', {'messages': messages})
         messages = ('You are not authorised to access this site!',)
         return render(request, 'default_sites/message_site.html', {'messages': messages})
-    
+
     def season(request, user_id, season_id):
+        csrf_protect
+            #if submit value is 'delete-races' - delete selection of the races
+            #if submit value is 'delete-plans' - delete selection of the plans
         season = get_object_or_404(Season, pk=season_id)
         races = Race.objects.filter(parent_season=season_id)
         for race in races:
@@ -174,6 +178,17 @@ class SeasonView(generic.View):
         #for plan in plans:
         #    plan.count_load(PlanWeek.objects.filter(plan_id = plan.id).values_list('weeklyHours'))
         return render(request, 'plan/season.html', {'user_id': user_id, 'season': season, 'races': races, 'plans': plans})
+    
+    def seasonDelete(request, user_id, season_id):
+        if request.user.is_authenticated:
+            season = False
+            if str(request.user.id) == str(user_id):
+                csrf_protect
+                if request.method == 'POST':
+                    season = Season.objects.filter(pk=season_id, parent_user=user_id)
+                    if season:
+                        season.delete()
+        return redirect('plan:user', user_id)
 
 class RaceView(generic.View):
 
@@ -232,7 +247,27 @@ class RaceView(generic.View):
                 messages = ('You do not have the permission to edit this profile!',)
                 return render(request, 'default_sites/message_site_logged.html', {'messages': messages})
         messages = ('To see the profile, please, log in.',)
-        return render(request, 'default_sites/message_site.html', {'messages': messages})        
+        return render(request, 'default_sites/message_site.html', {'messages': messages})   
+
+    def raceDelete(request, user_id, season_id):
+        if request.user.is_authenticated:
+            if str(request.user.id) == str(user_id):
+                csrf_protect
+                if request.method == 'POST':
+                    raceList = []
+                    if 'deleteRaces' in request.POST:
+                        if Season.objects.filter(parent_user=user_id):
+                            selection = request.POST.getlist('raceSelection')
+                            raceList = Race.objects.filter(id__in=selection, parent_season=season_id)
+                    elif 'deleteRacesAll' in request.POST:
+                        raceList = Race.objects.filter(parent_season=season_id)
+                    for race in raceList:
+                        print(race.name, race.priority)
+                        race.delete()
+        return redirect('plan:season', user_id, season_id)
+
+    def raceDeleteAll(request, user_id, season__id, race_id):
+        pass
 
 class PlanView(generic.View):
 
@@ -273,6 +308,25 @@ class PlanView(generic.View):
         for pw in planWeeks:
             pw.prepareData()
         return render(request, 'plan/plan.html', {'plan': plan, 'planWeeks': planWeeks, 'season_id': plan.parent_season.id})
+    
+    def planDelete(request, user_id, season_id):
+        if request.user.is_authenticated:
+            if str(request.user.id) == str(user_id):
+                csrf_protect
+                if request.method == 'POST':
+                    planList = []
+                    if Season.objects.filter(parent_user=user_id):
+                        if 'deletePlans' in request.POST:
+                            selection = request.POST.getlist('planSelection')
+                            planList = Plan.objects.filter(id__in=selection, parent_season=season_id)
+                        elif 'deletePlansAll' in request.POST:
+                            planList = Plan.objects.filter(parent_season=season_id)
+                        for plan in planList:
+                            print(plan.name, plan.load)
+                            plan.delete()
+                    print(planList)
+                    print(request.POST.getlist('planSelection'))
+        return redirect('plan:season', user_id, season_id)
 
 def logout(request):
     csrf_protect

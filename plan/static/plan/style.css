@@ -87,7 +87,7 @@ footer p {
 }
 
 td, tr, th {
-padding-right: 5%;
+padding-right: 2%;
 width: 24%;
 text-align: left;
 }
@@ -117,4 +117,7 @@ text-align: center;
 border-top:solid 1px black;
 border-collapse: collapse;
 padding: 0 0.5rem;
+}
+.checkbox {
+	width: 2%;
 }
