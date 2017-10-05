@@ -1,6 +1,8 @@
 from django.conf.urls import url, include
+from django.contrib.auth.views import logout
 
 from . import views
+from pedalStroke import settings
 
 app_name = 'plan'
 urlpatterns = [
