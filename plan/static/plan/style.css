@@ -101,7 +101,7 @@ text-align: center;
 	width: 20%;
 }
 .duration td {
-text-align: center;	
+text-align: center;
 }
 .end-date {
 width: auto;
@@ -121,3 +121,62 @@ padding: 0 0.5rem;
 .checkbox {
 	width: 2%;
 }
+.season_link {
+	display: inline-block;
+	background-color: #BC1913;
+	padding: 1.5rem 0rem;
+	font-size: 1.5em;
+	text-decoration: none;
+	color: #FFFFFF;
+	border-radius: 15px;
+	width: 27%;
+	height: auto;
+	text-align: center;
+	margin: 10px;
+	border: solid 8px #BC1913;
+	font-weight: 800;
+}
+.season_link:hover {
+	background-color: #FFFFFF;
+	color: #BC1913;
+}
+.btn_default {
+	font-family: "Lucida Sans Unicode", "Lucida Grande", sans-serif;
+	display: inline-block;
+	background-color: #BC1913;
+	color: #FFFFFF;
+	text-decoration: none;
+	font-size: 15px;
+	border: solid 4px #BC1913;
+	border-radius: 10px;
+	padding: 0px 8px;
+	margin: 1px;
+}
+.btn_default:hover {
+	background-color: #FFFFFF;
+	color: #BC1913;
+}
+.table_default {
+	width: 100%;
+	border: none;
+	border-collapse: collapse;
+}
+.table_default th {
+	font-weight: 800;
+	font-size: 16px;
+	background-color: #BC1913;
+	border-left: none;
+	border-right: none;
+	padding: 0.5rem;
+	color: #FFFFFF;
+	margin-bottom: 5px;
+}
+.table_default td{
+	padding: 5px 0;
+	text-align: center;
+}
+.table_default td a {
+	text-decoration: none;
+	color: black;
+}
+.table_default

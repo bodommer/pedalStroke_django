@@ -1,12 +1,12 @@
 {% extends "plan/base_logged.html" %}
 
-{% block content %} 
+{% block content %}
   <h2>Edit data</h2>
   <form method="post">
     {% csrf_token %}
       {% for field in form %}
       <p>
-        {{ field.label_tag }} 
+        {{ field.label_tag }}
         {{ field }}
         {% if field.help_text %}
           <small style="display: none">{{ field.help_text }}</small>
@@ -19,5 +19,5 @@
 
     <button type="submit">Save Changes</button>
   </form>
-  <a href="{% url 'plan:profile' user.id %}">Go back</a>
+  <a class='btn_default' href="{% url 'plan:profile' user.id %}">Go back</a>
 {% endblock %}
