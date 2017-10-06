@@ -1,10 +1,18 @@
 {% extends "plan/base.html" %}
 
 {% block content %}
+	<h2>Training revolution</h2>
 	<p>
-		Vitajte!
-		<br>
-		//enter presentation here
+		Do not spend your money on expensive personal trainers or time studying fundamental training techniques. 
+		PedalStroke will do everything for you - quickly, comfortably and effortlessly!
 	</p>
-
+	{% load static %}
+	<img src="{% static 'plan/images/graph_cover.png' %}" alt="graph_image" width=100%>
+	<h2>Focus on training</h2>
+	<p>
+		We offer you complete training management, advices and suggestions - plan, monitor, analyse and improve your 
+		trainings with us!
+	</p>
+	<img src="{% static 'plan/images/woman_training.jpeg' %}" alt="training_image" width=100%>
+	<h2>  </h2>
 {% endblock %}
