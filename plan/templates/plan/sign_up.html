@@ -1,6 +1,6 @@
 {% extends "plan/base.html" %}
 
-{% block content %} 
+{% block content %}
   <h2>Sign up</h2>
   <form method="post">
     {% csrf_token %}
@@ -17,6 +17,6 @@
       </p>
       {% endfor %}
 
-    <button type="submit">Sign up</button>
+    <button class='btn_default' type="submit">Sign up</button>
   </form>
 {% endblock %}

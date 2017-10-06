@@ -1,7 +1,7 @@
 {% extends "plan/base_logged.html" %}
 
-{% block content %} 
-	{% if messages %}	
+{% block content %}
+	{% if messages %}
 		    {% for message in messages %}
 		        <p style="color: red">{{ message }} </p>
 		    {% endfor %}
@@ -10,9 +10,9 @@
 	    {% csrf_token %}
 	    {% for field in form  %}
 	   		{{ field.errors }}
-	   		{{ field.label_tag }} {{ field }} <br> 
+	   		{{ field.label_tag }} {{ field }} <br>
 	  {% endfor %}
-	    <input type="submit" value="Submit" />
+	    <input class='btn_default' type="submit" value="Submit" />
 	</form>
-	<a href="{% url 'plan:season' user.id season_id %}">Go back</a>
+	<a class='btn_default' href="{% url 'plan:season' user.id season_id %}">Go back</a>
 {% endblock %}

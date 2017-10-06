@@ -1,4 +1,4 @@
-{% extends "plan/base.html" %}
+{% extends "plan/base_logged.html" %}
 
 {% block content %}
 
@@ -8,7 +8,7 @@ Ends: {{ plan.planEnd }}<br>{% csrf_token %}
 Type of Plan: {{ plan.typeOfPlan}}<br>
 
 {% if planWeeks %}
-	<table id='planWeeks'>
+	<table class='table_default' id='planWeeks'>
 		<th>Week</th><th>Monday</th><th>Period</th><th>Weekly hours</th><th>Race</th><th>Gym</th><th>E</th><th>F</th><th>SpS</th><th>EF</th><th>AE</th><th>MP</th><th>Test</th>
 	{% for pw in planWeeks %}
 		<tr><td>{{ pw.week }}</td><td>{{ pw.monday }}</td><td>{{ pw.period }}</td><td>{{ pw.weeklyHours }}</td><td>{{ pw.races }}</td><td>{{ pw.gym }}</td><td>{{ pw.endurance }}</td><td>{{ pw.force }}</td><td>{{ pw.speedSkills }}</td><td>{{ pw.eForce }}</td><td>{{ pw.aEndurance }}</td><td>{{ pw.maxPower }}</td><td>{{ pw.test }}</td></tr>
@@ -16,6 +16,6 @@ Type of Plan: {{ plan.typeOfPlan}}<br>
 	</table>
 {% endif %}
 {% csrf_token %}
-	<a href="{% url 'plan:season' user.id season_id %}">Go back</a>
+	<a class='btn_default' href="{% url 'plan:season' user.id season_id %}">Go back</a>
 
 {% endblock %}
