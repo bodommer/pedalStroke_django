@@ -25,7 +25,8 @@ SECRET_KEY = '3f=)e3)atee1%3$4mutln8!xe*jc@v0&5u^c#844_f=u+e$b5r'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['bodommer.pythonanywhere.com',]
+ALLOWED_HOSTS = ['bodommer.pythonanywhere.com',
+                 '127.0.0.1']
 
 
 # Application definition
