@@ -25,7 +25,7 @@ SECRET_KEY = '3f=)e3)atee1%3$4mutln8!xe*jc@v0&5u^c#844_f=u+e$b5r'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['bodommer.pythonanywhere.com',]
 
 
 # Application definition
@@ -55,7 +55,7 @@ ROOT_URLCONF = 'pedalStroke.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': ['./templates',],
+        'DIRS': ['./templates', 'pedalStroke_django/templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -118,6 +118,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
 
 STATIC_URL = '/static/'
+STATIC_ROOT = "/home/bodommer/pedalStroke_django/static"
 
 # Redirect to home URL after login (Default redirects to /accounts/profile/)
 LOGIN_REDIRECT_URL = '/plan/'
