@@ -33,6 +33,10 @@ ALLOWED_HOSTS = ['bodommer.pythonanywhere.com',
 
 INSTALLED_APPS = [
     'plan.apps.PlanConfig',
+    'user.apps.UserConfig',
+    'home.apps.HomeConfig',
+    'blog.apps.BlogConfig',
+    'trainings.apps.TrainingsConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -130,5 +134,5 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 EMAIL_USE_TLS = True
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_HOST_USER = 'hqprdc123@gmail.com'
-EMAIL_HOST_PASSWORD = 'm281995j'
+EMAIL_HOST_PASSWORD = 'M281995j'
 EMAIL_PORT = 587

@@ -1,4 +1,21 @@
-{% extends "plan/base_logged.html" %}
+{% extends "default_sites/base_logged.html" %}
+
+{% block jsload %}
+<script type="text/javascript" src="https://www.google.com/jsapi"></script>
+<script type="text/javascript">
+	google.load('visualization', '1.0', {'packages':['corechart']});
+	google.setOnLoadCallback(drawChart);
+	function drawChart() {
+	  var data = new google.visualization.DataTable();
+	  data.addColumn('string', 'Number');
+	  data.addColumn('number', 'Number/10');
+	  data.addRows( {{ data }} );
+	
+	var chart = new google.visualization.LineChart(document.getElementById('chart_div'));
+	chart.draw(data, {width: 400, height: 240, title: "Numbers"});
+}
+</script>
+{% endblock %}
 
 {% block content %}
 
@@ -8,6 +25,8 @@ Ends: {{ plan.planEnd }}<br>{% csrf_token %}
 Type of Plan: {{ plan.typeOfPlan}}<br>
 
 {% if planWeeks %}
+	<div id="tester" style="width:100%;height:600px"></div>
+	
 	<table class='table_default' id='planWeeks'>
 		<th>Week</th><th>Monday</th><th>Period</th><th>Weekly hours</th><th>Race</th><th>Gym</th><th>E</th><th>F</th><th>SpS</th><th>EF</th><th>AE</th><th>MP</th><th>Test</th>
 	{% for pw in planWeeks %}
@@ -15,7 +34,13 @@ Type of Plan: {{ plan.typeOfPlan}}<br>
 	{% endfor %}
 	</table>
 {% endif %}
+<script type='text/javascript'>
+    var xcoord = {{x|safe }};
+    var ycoord = {{ y | safe }};
+	var cap = {{ captions | safe }};
+</script>
+{% load static %}
+<script src={% static 'plan/main.js' %} type="text/javascript"></script>
 {% csrf_token %}
 	<a class='btn_default' href="{% url 'plan:season' user.id season_id %}">Go back</a>
-
 {% endblock %}

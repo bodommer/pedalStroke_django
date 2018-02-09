@@ -1,0 +1,16 @@
+{% extends "default_sites/base_logged.html" %}
+
+{% block content %}
+
+<h3> Welcome, {{ user.username }}! </h3>
+	<p>
+		{% if seasons %}
+		    {% for season in seasons %}
+		        <a class="season_link" href="{% url 'plan:season' user.id season.id %}">Season {{ season.year }}</a>
+		    {% endfor %}
+		{% else %}
+		    <p>You have no created seasons. Let's create your first!</p>
+		{% endif %}
+				<a class='season_link' href={% url 'plan:new season' user.id %}>New season</a>
+	</p>
+{% endblock %}

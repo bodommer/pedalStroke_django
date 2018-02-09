@@ -2,7 +2,6 @@ body {
 	margin: 0px;
 }
 html {
-		font-family: "Lucida Sans Unicode", "Lucida Grande", sans-serif;
 }
 /*
 section, nav, a, li, header, p, li, h1, ul {
@@ -15,6 +14,7 @@ section, nav, a, li, header, p, li, h1, ul {
 	width: auto;
 }
 header {
+	visibility: visible;
 	height: 70px;
 	width: 200px;
 	display: inline-block;
@@ -35,13 +35,12 @@ nav {
 	background-color: #BC1913;
 	float: right;
 	margin-right: 25%;
-
 	text-align: center;
 }
 nav ul {
 	display: inline-block;
 	list-style-type: none;
-	width: 500px;;
+	width: calc(50vw - 250px);
 }
 nav li {
 	display: inline-block;

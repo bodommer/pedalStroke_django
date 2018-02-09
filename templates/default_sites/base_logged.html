@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+	{% load static %}
+		<link rel="stylesheet" type="text/css" href="{% static 'plan/style_minimum.css' %}"/> 
+		<link rel="stylesheet" type="text/css" href="{% static 'plan/style_medium.css' %}" media="screen and (min-width: 641px)"/>
+		<link rel="stylesheet" type="text/css" href="{% static 'plan/style.css' %}" media="screen and (min-width: 1201px)"/>
+    <title>{% block title %}PedalStroke v2.0{% endblock %}</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    {% block js_load %}{% endblock %}
+</head>
+
+<body>
+	<div id="topbar">
+    <!-- <header>
+      <img   src="{% static 'plan/images/pedalstroke_1.svg' %}"> -->
+	<a href= {% url 'home:home' %}>
+    	<header style="background: url('{% static 'plan/images/pedalstroke_1.svg' %}') alt='icon')">
+  	</a>
+		</header>
+	    <nav>
+	        {% block sidebar %}
+          <ul>
+	            <li><a id="sign-up" href= {% url 'home:logout' %}>Logout</a></li>
+              <li><a href= {% url 'user:profile' user.id %}>Profile</a></li>
+              <li><a href= {% url 'home:about' %}>About</a></li>
+              <li><a href= {% url 'plan:user' user.id %}>My Plans</a></li>
+              <li><a href= {% url 'home:home' %}>Home</a></li>
+          </ul>
+          {% endblock %}
+	    </nav>
+    </div>
+
+    <section>
+        {% block content %}{% endblock %}
+    </section>
+    <footer>
+    	<p>Copyright Andrej Jurco</p>
+    </footer>
+</body>
+</html>

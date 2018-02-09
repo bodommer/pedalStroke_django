@@ -1,4 +1,4 @@
-{% extends "plan/base_logged.html" %}
+{% extends "default_sites/base_logged.html" %}
 
 {% block content %}
 	{% if messages %}
@@ -13,6 +13,6 @@
 	   		{{ field.label_tag }} {{ field }} <br>
 	  {% endfor %}
 	    <input class='btn_default' type="submit" value="Submit" />
+			<a class='btn_default' href="{% url 'plan:season' user.id season_id %}">Go back</a>
 	</form>
-	<a class='btn_default' href="{% url 'plan:season' user.id season_id %}">Go back</a>
 {% endblock %}

@@ -3,6 +3,7 @@ from django.utils import timezone
 from datetime import date, timedelta, datetime
 import datetime
 from plan.model.Season import Season
+import json
 
 class Plan(models.Model):
     PLAN_CHOICES = (
@@ -338,6 +339,37 @@ class Plan(models.Model):
             print(load)
         self.load = round(load)
         print(self.load)
+        
+    def get_graph_data(self, planWeeks):
+        x = []
+        y = []
+        captions = []
+        
+        for wk in planWeeks:
+            x.append(int(wk.week))
+            y.append(int(wk.weeklyHours))
+            text = "Week: {}\nPeriod: {}\nHours: {}\nMonday: {}\nTraining:".format(wk.week, wk.period, wk.weeklyHours, wk.monday)
+            if wk.gym:
+                text += ' Gym: {}'.format(wk.gym)                    
+            if wk.endurance != '0':
+                text += ' EN'
+            if wk.force != '0':
+                text += ' FO'
+            if wk.speedSkills != '0':
+                text += ' SpS'
+            if wk.eForce != '0':
+                text += ' EF'
+            if wk.aEndurance != '0':
+                text += ' AE'
+            if wk.maxPower != '0':
+                text += ' MP'
+            if wk.test != '0':
+                text += ' TEST'
+                
+            captions.append(text)
+            
+        if (len(x) == len(y)):
+            return [x, y, captions]
 
 class PlanWeek(models.Model):
     aEndurance = models.PositiveSmallIntegerField(0)

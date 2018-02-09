@@ -16,8 +16,13 @@ Including another URLconf
 from django.conf.urls import url, include
 from django.contrib import admin
 
+app_name = 'pedalStroke'
 urlpatterns = [
     url(r'^plan/', include('plan.urls')),
+    url(r'^trainings/', include('trainings.urls')),
+    url(r'^home/', include('home.urls')),
+    url(r'^blog/', include('blog.urls')),
+    url(r'^user/', include('user.urls')),
     url(r'^admin/', admin.site.urls),
     url(r'^', include('django.contrib.auth.urls')),
 ]

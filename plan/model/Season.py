@@ -1,6 +1,6 @@
 from django.db import models
 from django.utils import timezone
-from plan.model.Profile import Profile
+from user.model.Profile import Profile
 
 class Season(models.Model):
     year = models.PositiveIntegerField('Season', default=timezone.now().year)
